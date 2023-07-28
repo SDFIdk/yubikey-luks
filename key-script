@@ -2,7 +2,7 @@
 #
 # This is /sbin/ykluks-keyscript, which gets called when unlocking the disk
 #
-YUBIKEY_LUKS_SLOT=2 #Set this in case the value is missing in /etc/ykluks.cfg
+YUBIKEY_SLOT=2 #Set this in case the value is missing in /etc/ykluks.cfg
 
 . /etc/ykluks.cfg
 
@@ -20,7 +20,7 @@ message()
     return 0
 }
 
-check_yubikey_present="$(ykinfo -q -"$YUBIKEY_LUKS_SLOT")"
+check_yubikey_present="$(ykinfo -q -"$YUBIKEY_SLOT")"
 
 if [ -z "$YUBIKEY_CHALLENGE" ] || [ "$check_yubikey_present" != "1" ] ; then
     if [ -z "$cryptkeyscript" ]; then
@@ -30,29 +30,29 @@ if [ -z "$YUBIKEY_CHALLENGE" ] || [ "$check_yubikey_present" != "1" ] ; then
             cryptkeyscript="/lib/cryptsetup/askpass"
         fi
     fi
-    PW="$($cryptkeyscript "$WELCOME_TEXT")"
+    PASSWORD="$($cryptkeyscript "$WELCOME_TEXT")"
 else
-    PW="$YUBIKEY_CHALLENGE"
+    PASSWORD="$YUBIKEY_CHALLENGE"
 fi
 
 if [ "$check_yubikey_present" = "1" ]; then
     message "Accessing yubikey..."
     if [ "$HASH" = "1" ]; then
-        PW=$(printf %s "$PW" | sha256sum | awk '{print $1}')
+        PASSWORD=$(printf %s "$PASSWORD" | sha256sum | awk '{print $1}')
     fi
-    R="$(printf %s "$PW" | ykchalresp -"$YUBIKEY_LUKS_SLOT" -i- 2>/dev/null || true)"
-    if [ "$R" ]; then
+    RESPONCE="$(printf %s "$PASSWORD" | ykchalresp -"$YUBIKEY_SLOT" -i- 2>/dev/null || true)"
+    if [ "$RESPONCE" ]; then
         message "Retrieved the response from the Yubikey"
         if [ "$CONCATENATE" = "1" ]; then
-            printf '%s' "$PW$R"
+            printf '%s' "$PASSWORD$RESPONCE"
         else
-            printf '%s' "$R"
+            printf '%s' "$RESPONCE"
         fi
     else
         message "Failed to retrieve the response from the Yubikey"
     fi
 else
-    printf '%s' "$PW"
+    printf '%s' "$PASSWORD"
 fi
 
 exit 0
