@@ -40,7 +40,7 @@ run_dir() {
 mount_barrier() {
     if ((REMOUNT)); then
         mount -o remount,barrier "/dev/mapper/$CRYPTNAME"
-    REMOUNT=0
+        REMOUNT=0
     fi
 }
 
