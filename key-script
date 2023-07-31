@@ -2,14 +2,16 @@
 #
 # This is /sbin/ykluks-keyscript, which gets called when unlocking the disk
 #
-YUBIKEY_SLOT=2 #Set this in case the value is missing in /etc/ykluks.cfg
 
+#Set this in case the value is missing in /etc/ykluks.cfg
+CONCATENATE=0
+HASH=0
+WELCOME_TEXT="Please insert YubiKey and press enter or enter a valid passphrase ..."
+YUBIKEY_SLOT=2
+#YUBIKEY_CHALLENGE="YubiKey Password" Set this in /etc/ykluks.conf to enable 1FA
+
+# Import config
 . /etc/ykluks.cfg
-
-if [ -z "$WELCOME_TEXT" ]
-then
-    WELCOME_TEXT="Please insert yubikey and press enter or enter a valid passphrase"
-fi
 
 message()
 {
