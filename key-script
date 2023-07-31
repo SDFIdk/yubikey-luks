@@ -6,13 +6,15 @@ YUBIKEY_SLOT=2 #Set this in case the value is missing in /etc/ykluks.cfg
 
 . /etc/ykluks.cfg
 
-if [ -z "$WELCOME_TEXT" ]; then
+if [ -z "$WELCOME_TEXT" ]
+then
     WELCOME_TEXT="Please insert yubikey and press enter or enter a valid passphrase"
 fi
 
 message()
 {
-    if [ -x /bin/plymouth ] && plymouth --ping; then
+    if [ -x /bin/plymouth ] && plymouth --ping
+    then
         plymouth message --text="$*"
     else
         echo "$@" >&2
@@ -22,9 +24,12 @@ message()
 
 check_yubikey_present="$(ykinfo -q -"$YUBIKEY_SLOT")"
 
-if [ -z "$YUBIKEY_CHALLENGE" ] || [ "$check_yubikey_present" != "1" ] ; then
-    if [ -z "$cryptkeyscript" ]; then
-        if [ -x /bin/plymouth ] && plymouth --ping; then
+if [ -z "$YUBIKEY_CHALLENGE" ] || [ "$check_yubikey_present" != "1" ]
+then
+    if [ -z "$cryptkeyscript" ]
+    then
+        if [ -x /bin/plymouth ] && plymouth --ping
+        then
             cryptkeyscript="plymouth ask-for-password --prompt"
         else
             cryptkeyscript="/lib/cryptsetup/askpass"
@@ -35,15 +40,19 @@ else
     PASSWORD="$YUBIKEY_CHALLENGE"
 fi
 
-if [ "$check_yubikey_present" = "1" ]; then
+if [ "$check_yubikey_present" = "1" ]
+then
     message "Accessing yubikey..."
-    if [ "$HASH" = "1" ]; then
+    if [ "$HASH" = "1" ]
+    then
         PASSWORD=$(printf %s "$PASSWORD" | sha256sum | awk '{print $1}')
     fi
     RESPONCE="$(printf %s "$PASSWORD" | ykchalresp -"$YUBIKEY_SLOT" -i- 2>/dev/null || true)"
-    if [ "$RESPONCE" ]; then
+    if [ "$RESPONCE" ]
+    then
         message "Retrieved the response from the Yubikey"
-        if [ "$CONCATENATE" = "1" ]; then
+        if [ "$CONCATENATE" = "1" ]
+        then
             printf '%s' "$PASSWORD$RESPONCE"
         else
             printf '%s' "$RESPONCE"
