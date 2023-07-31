@@ -14,7 +14,8 @@ if [ "$(id -u)" -ne 0 ]; then
     exit 1
 fi
 
-while getopts ":s:d:y:hcv" opt; do
+while getopts ":s:d:y:hcv" opt
+do
     case $opt in
         s)
             LUKS_SLOT=$OPTARG
@@ -25,7 +26,8 @@ while getopts ":s:d:y:hcv" opt; do
             echo "setting disk to $OPTARG."
             ;;
         y)
-            if [ ! "$YUBIKEY_SLOT" = "$OPTARG" ]; then
+            if [ ! "$YUBIKEY_SLOT" = "$OPTARG" ]
+            then
                 echo "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
                 echo "WARNING: You are enrolling slot $OPTARG of your yubikey."
                 echo "During boot, slot $YUBIKEY_SLOT is configured to be used (/etc/ykluks.cfg)."
@@ -60,52 +62,82 @@ done
 
 echo "This script will utilize the YubiKey slot $YUBIKEY_SLOT for slot $LUKS_SLOT on drive $DISK.  If this is not what you intended, exit now!"
 
-if [ "$CLEAR_SLOT" = "1" ]; then
+if [ "$CLEAR_SLOT" = "1" ]
+then
     echo "Killing LUKS slot $LUKS_SLOT"
     cryptsetup luksKillSlot "$DISK" "$LUKS_SLOT"
 fi
 
 echo "Adding yubikey to initrd"
 
-while true ; do
-    if lsusb | grep -iq 'yubico'; then break; fi
+while true
+do
+    if lsusb | grep -iq 'yubico'
+    then
+        break
+    fi
     printf "Please insert a yubikey and press enter."
     read -r _ <&1
 done
 
 PASSWORD_1=$(/lib/cryptsetup/askpass "Please enter the yubikey challenge password. This is the password that will only work while your yubikey is installed in your computer:")
-if [ "$DBG" = "1" ]; then echo "Password: $PASSWORD_1"; fi
+if [ "$DBG" = "1" ]
+then
+    echo "Password: $PASSWORD_1"
+fi
 
 PASSWORD_2=$(/lib/cryptsetup/askpass "Please enter the yubikey challenge password again:")
-if [ "$DBG" = "1" ]; then echo "Password: $PASSWORD_2"; fi
+if [ "$DBG" = "1" ]
+then
+    echo "Password: $PASSWORD_2"
+fi
 
-if [ "$PASSWORD_1" != "$PASSWORD_2" ]; then
+if [ "$PASSWORD_1" != "$PASSWORD_2" ]
+then
     echo "Passwords do not match"
     exit 1
 fi
 
-if [ "$HASH" = "1" ]; then
+if [ "$HASH" = "1" ]
+then
     PASSWORD_1=$(printf %s "$PASSWORD_1" | sha256sum | awk '{print $1}')
-    if [ "$DBG" = "1" ]; then echo "Password hash: $PASSWORD_1"; fi
+    if [ "$DBG" = "1" ]
+    then
+        echo "Password hash: $PASSWORD_1"
+    fi
 fi
 
 RESPONCE="$(printf %s "$PASSWORD_1" | ykchalresp -"$YUBIKEY_SLOT" -i- 2>/dev/null || true)"
-if [ "$DBG" = "1" ]; then echo "Yubikey response: $RESPONCE"; fi
+if [ "$DBG" = "1" ]
+then
+    echo "Yubikey response: $RESPONCE"
+fi
 
-if [ -z "$RESPONCE" ]; then
+if [ -z "$RESPONCE" ]
+then
     echo "Yubikey not available or timed out waiting for button press"
     exit 1
 fi
 
 OLD=$(/lib/cryptsetup/askpass "Please provide an existing passphrase. This is NOT the passphrase you just entered, this is the passphrase that you currently use to unlock your LUKS encrypted drive:")
-if [ "$DBG" = "1" ]; then echo "Old passphrase: $OLD"; fi
+if [ "$DBG" = "1" ]
+then
+    echo "Old passphrase: $OLD"
+fi
 
-if [ "$CONCATENATE" = "1" ]; then
+if [ "$CONCATENATE" = "1" ]
+then
     printf '%s\n' "$OLD" "$PASSWORD_1$RESPONCE" "$PASSWORD_1$RESPONCE" | cryptsetup --key-slot="$LUKS_SLOT" luksAddKey "$DISK" 2>&1;
-    if [ "$DBG" = "1" ]; then echo "LUKS key: $PASSWORD_1$RESPONCE"; fi
+    if [ "$DBG" = "1" ]
+    then
+        echo "LUKS key: $PASSWORD_1$RESPONCE"
+    fi
 else
     printf '%s\n' "$OLD" "$RESPONCE" "$RESPONCE" | cryptsetup --key-slot="$LUKS_SLOT" luksAddKey "$DISK" 2>&1;
-    if [ "$DBG" = "1" ]; then echo "LUKS key: $RESPONCE"; fi
+    if [ "$DBG" = "1" ]
+    then
+        echo "LUKS key: $RESPONCE"
+    fi
 fi
 
 exit 0

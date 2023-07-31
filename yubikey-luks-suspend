@@ -38,7 +38,8 @@ run_dir() {
 
 # Remount root fs with barrier
 mount_barrier() {
-    if ((REMOUNT)); then
+    if ((REMOUNT))
+    then
         mount -o remount,barrier "/dev/mapper/$CRYPTNAME"
         REMOUNT=0
     fi
@@ -47,7 +48,8 @@ mount_barrier() {
 # Unmount bind mounts
 umount_bind() {
     local p
-    for p in ${BIND_PATHS}; do
+    for p in ${BIND_PATHS}
+    do
         mountpoint -q "${INITRAMFS_DIR}${p}" && umount -l "${INITRAMFS_DIR}${p}"
     done
 }
@@ -72,7 +74,8 @@ cryptdevice_mount_options() {
     fs="$(cut -d ' ' -f 1 <<< "${mt}")"
     local opt
     opt="$(cut -d ' ' -f 2 <<< "${mt}")"
-    if [[ "${fs}" == "ext4" || "${fs}" == "btrfs" ]]; then
+    if [[ "${fs}" == "ext4" || "${fs}" == "btrfs" ]]
+    then
         echo "${opt}"
     fi
 }
@@ -101,7 +104,8 @@ chmod -R go-w "${INITRAMFS_DIR}"
 # For some reason, $BIND_PATHS aren't in ${INITRAMFS_DIR}
 # No worries, we'll just create them if they don't exist
 BIND_MOUNTED=1
-for p in ${BIND_PATHS}; do
+for p in ${BIND_PATHS}
+do
     [ -d "${INITRAMFS_DIR}${p}" ] || mkdir "${INITRAMFS_DIR}${p}"
     mount -o bind "${p}" "${INITRAMFS_DIR}${p}"
 done
@@ -127,7 +131,8 @@ systemctl stop systemd-journald.service
 # if mounted with `barrier=1`, which is the default. Temporarily remount with
 # `barrier=0` if this is true of the crypt fs.
 MOUNT_OPTS="$(cryptdevice_mount_options "$CRYPTNAME")"
-if [[ "$MOUNT_OPTS" ]] && ! [[ "$MOUNT_OPTS" == *nobarrier* || "$MOUNT_OPTS" == *barrier=0* ]]; then
+if [[ "$MOUNT_OPTS" ]] && ! [[ "$MOUNT_OPTS" == *nobarrier* || "$MOUNT_OPTS" == *barrier=0* ]]
+then
     REMOUNT=1
     mount -o remount,nobarrier "/dev/mapper/$CRYPTNAME"
 fi

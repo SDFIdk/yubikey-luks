@@ -7,7 +7,8 @@ YUBIKEY_SLOT=2 #Set this in case the value is missing in /etc/ykluks.cfg
 set -e
 . /etc/ykluks.cfg
 
-while getopts ":d:n:hv" opt; do
+while getopts ":d:n:hv" opt
+do
     case $opt in
         d)
             DISK=$OPTARG
@@ -37,37 +38,57 @@ done
 
 echo "This script will try opening $NAME LUKS container on drive $DISK . If this is not what you intended, exit now!"
 
-while true ; do
-    if lsusb | grep -iq 'yubico'; then break; fi
+while true
+do
+    if lsusb | grep -iq 'yubico'
+    then
+        break
+    fi
     printf "Please insert a yubikey and press enter."
     read -r _ <&1
 done
 
 PASSWORD=$(/lib/cryptsetup/askpass "Enter password created with yubikey-luks-enroll:")
-if [ "$DBG" = "1" ]; then echo "Password: $PASSWORD"; fi
+if [ "$DBG" = "1" ]
+then
+    echo "Password: $PASSWORD"
+fi
 
-if [ "$HASH" = "1" ]; then
+if [ "$HASH" = "1" ]
+then
     PASSWORD=$(printf %s "$PASSWORD" | sha256sum | awk '{print $1}')
-    if [ "$DBG" = "1" ]; then echo "Password hash: $PASSWORD"; fi
+    if [ "$DBG" = "1" ]
+    then
+        echo "Password hash: $PASSWORD"
+    fi
 fi
 
 RESPONCE="$(printf %s "$PASSWORD" | ykchalresp -"$YUBIKEY_SLOT" -i- 2>/dev/null || true)"
-if [ "$DBG" = "1" ]; then echo "Yubikey response: $RESPONCE"; fi
+if [ "$DBG" = "1" ]
+then
+    echo "Yubikey response: $RESPONCE"
+fi
 
-if [ -z "$RESPONCE" ]; then
+if [ -z "$RESPONCE" ]
+then
     echo "Yubikey not available or timed out waiting for button press"
     exit 1
 fi
 
 _passphrase=''
-if [ "$CONCATENATE" = "1" ]; then
+if [ "$CONCATENATE" = "1" ]
+then
     _passphrase=$(printf '%s' "$PASSWORD$RESPONCE")
 else
     _passphrase=$(printf '%s' "$RESPONCE")
 fi
-if [ "$DBG" = "1" ]; then echo "LUKS key: ${_passphrase}"; fi
+if [ "$DBG" = "1" ]
+then
+    echo "LUKS key: ${_passphrase}"
+fi
 
-if [ "$(id -u)" -eq 0 ]; then
+if [ "$(id -u)" -eq 0 ]
+then
     printf %s "${_passphrase}" | cryptsetup luksOpen "$DISK" "$NAME" 2>&1;
 else
     # c-style escapes are not available in sh, so instead of doing symply
@@ -82,7 +103,8 @@ else
     # newline) and concatenates everything in a variable and adds a newline.
     expect_script=''
     OLDIFS="$IFS"
-    while IFS="${_n}" read -r line; do
+    while IFS="${_n}" read -r line
+    do
         expect_script="$expect_script$line${_n}"
     done <<EXPECTSCRIPT
         set timeout -1;
@@ -92,12 +114,12 @@ else
         send -- "${_passphrase}\\r";
         expect eof
 EXPECTSCRIPT
-# get rid of all tabs and convert newlines to spaces in the expect script,
-# otherwise it will break when it is piped to expect
-expect_script=$(echo "$expect_script" | tr -d '\t' | tr '\n' ' ')
-IFS="$OLDIFS"
+    # get rid of all tabs and convert newlines to spaces in the expect script,
+    # otherwise it will break when it is piped to expect
+    expect_script=$(echo "$expect_script" | tr -d '\t' | tr '\n' ' ')
+    IFS="$OLDIFS"
 
-echo "$expect_script" | expect -f -
+    echo "$expect_script" | expect -f -
 fi
 
 exit 0
