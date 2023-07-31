@@ -48,23 +48,23 @@ then
     message "Accessing yubikey..."
     if [ "$HASH" = "1" ]
     then
-        PASSWORD=$(printf %s "$PASSWORD" | sha256sum | awk '{print $1}')
+        PASSWORD=$(echo -n "$PASSWORD" | sha256sum | awk '{print $1}')
     fi
-    RESPONCE="$(printf %s "$PASSWORD" | ykchalresp -"$YUBIKEY_SLOT" -i- 2>/dev/null || true)"
+    RESPONCE="$(echo -n "$PASSWORD" | ykchalresp -"$YUBIKEY_SLOT" -i- 2>/dev/null || true)"
     if [ "$RESPONCE" ]
     then
         message "Retrieved the response from the Yubikey"
         if [ "$CONCATENATE" = "1" ]
         then
-            printf '%s' "$PASSWORD$RESPONCE"
+            echo -n "$PASSWORD$RESPONCE"
         else
-            printf '%s' "$RESPONCE"
+            echo -n "$RESPONCE"
         fi
     else
         message "Failed to retrieve the response from the Yubikey"
     fi
 else
-    printf '%s' "$PASSWORD"
+    echo -n "$PASSWORD"
 fi
 
 exit 0
