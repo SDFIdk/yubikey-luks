@@ -130,19 +130,22 @@ ArgumentHandeling () {
     done
 }
 
+ClearLuksSlot () {
+    echo "This script will utilize the YubiKey slot $YUBIKEY_SLOT for slot $LUKS_SLOT on drive $DISK.  If this is not what you intended, exit now!"
+
+    if [ "$CLEAR_SLOT" = "1" ]
+    then
+        echo "Killing LUKS slot $LUKS_SLOT"
+        cryptsetup luksKillSlot "$DISK" "$LUKS_SLOT"
+    fi
+}
+
+
 CheckIfRoot
 DefaultConfig
 CheckDependencies
 ArgumentHandeling "$@"
-
-
-echo "This script will utilize the YubiKey slot $YUBIKEY_SLOT for slot $LUKS_SLOT on drive $DISK.  If this is not what you intended, exit now!"
-
-if [ "$CLEAR_SLOT" = "1" ]
-then
-    echo "Killing LUKS slot $LUKS_SLOT"
-    cryptsetup luksKillSlot "$DISK" "$LUKS_SLOT"
-fi
+ClearLuksSlot
 
 echo "Adding yubikey to initrd"
 
