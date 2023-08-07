@@ -18,7 +18,7 @@ DefaultConfig () {
 	YUBIKEY_SLOT=2
 	#YUBIKEY_CHALLENGE="YubiKey Password" Set this in /etc/ykluks.conf to enable 1FA
     LUKS_SLOT=7
-    DISK="/dev/sda3"
+    LUKS_DEVICE="/dev/sda3"
     CLEAR_SLOT=0
     DBG=0
 
@@ -80,7 +80,7 @@ ArgumentHandeling () {
                 echo "setting slot to $OPTARG."
                 ;;
             d)
-                DISK=$OPTARG
+                LUKS_DEVICE=$OPTARG
                 echo "setting disk to $OPTARG."
                 ;;
             y)
@@ -131,12 +131,12 @@ ArgumentHandeling () {
 }
 
 ClearLuksSlot () {
-    echo "This script will utilize the YubiKey slot $YUBIKEY_SLOT for slot $LUKS_SLOT on drive $DISK.  If this is not what you intended, exit now!"
+    echo "This script will utilize the YubiKey slot $YUBIKEY_SLOT for slot $LUKS_SLOT on drive $LUKS_DEVICE.  If this is not what you intended, exit now!"
 
     if [ "$CLEAR_SLOT" = "1" ]
     then
         echo "Killing LUKS slot $LUKS_SLOT"
-        cryptsetup luksKillSlot "$DISK" "$LUKS_SLOT"
+        cryptsetup luksKillSlot "$LUKS_DEVICE" "$LUKS_SLOT"
     fi
 }
 
@@ -209,13 +209,13 @@ YubiKeyResponce () {
 LuksAddKey () {
     if [ "$CONCATENATE" = "1" ]
     then
-        printf '%s\n' "$LUKS_PASSWORD" "$YUBIKEY_CHALLENGE$YUBIKEY_RESPONCE" "$YUBIKEY_CHALLENGE$YUBIKEY_RESPONCE" | cryptsetup --key-slot="$LUKS_SLOT" luksAddKey "$DISK" 2>&1;
+        printf '%s\n' "$LUKS_PASSWORD" "$YUBIKEY_CHALLENGE$YUBIKEY_RESPONCE" "$YUBIKEY_CHALLENGE$YUBIKEY_RESPONCE" | cryptsetup --key-slot="$LUKS_SLOT" luksAddKey "$LUKS_DEVICE" 2>&1;
         if [ "$DBG" = "1" ]
         then
             echo "LUKS key: $YUBIKEY_CHALLENGE$YUBIKEY_RESPONCE"
         fi
     else
-        printf '%s\n' "$LUKS_PASSWORD" "$YUBIKEY_RESPONCE" "$YUBIKEY_RESPONCE" | cryptsetup --key-slot="$LUKS_SLOT" luksAddKey "$DISK" 2>&1;
+        printf '%s\n' "$LUKS_PASSWORD" "$YUBIKEY_RESPONCE" "$YUBIKEY_RESPONCE" | cryptsetup --key-slot="$LUKS_SLOT" luksAddKey "$LUKS_DEVICE" 2>&1;
         if [ "$DBG" = "1" ]
         then
             echo "LUKS key: $YUBIKEY_RESPONCE"
