@@ -211,15 +211,15 @@ LuksPassword () {
 }
 
 YubiKeyDetect () {
-while true
-do
-    if lsusb | grep -iq 'yubico'
-    then
-        break
-    fi
-    read -n 1 -s -r -p "Please insert YubiKey and press any key."
-    echo ""
-done
+    while true
+    do
+        if lsusb | grep -iq 'yubico'
+        then
+            break
+        fi
+        read -n 1 -s -r -p "Please insert YubiKey and press any key."
+        echo ""
+    done
 }
 
 YubiKeyLuksCheck () {
