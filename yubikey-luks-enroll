@@ -71,7 +71,7 @@ CheckDependencies () {
 }
 
 ArgumentHandeling () {
-    while getopts ":s:d:y:p:hcv" opt
+    while getopts ":s:d:y:p:hcv1" opt
     do
         case $opt in
             s)
@@ -104,6 +104,10 @@ ArgumentHandeling () {
                     exit 1
                 fi
                 ;;
+            1)
+                # Enable 1FA in /etc/ykluks.cfg
+                ENABLE_1FA=true
+                ;;
             c)
                 CLEAR_SLOT=1
                 echo "clearing slot"
@@ -117,6 +121,7 @@ ArgumentHandeling () {
                 echo " -s <slot>     : set the LUKS slot (Default=Auto Detect)"
                 echo " -y <slot>     : set the yubikey slot to use (Default=2)"
                 echo " -p <file>     : file that contain LUKS password"
+                echo " -1            : Enable 1FA in /etc/ykluks.cfg"
                 echo " -c            : clear the slot prior to writing"
                 echo " -v            : show input/output in cleartext"
                 echo
@@ -281,6 +286,24 @@ YubiKeyResponce () {
     fi
 }
 
+YubiKeyEnable1FA () {
+    if [ -z "$ENABLE_1FA" ]
+        return
+    fi
+    if grep -q -F "YUBIKEY_CHALLENGE" /etc/ykluks.cfg
+    then
+        if grep -q -F "YUBIKEY_CHALLENGE=\"$YUBIKEY_CHALLENGE\"" /etc/ykluks.cfg
+        then
+            # key already defined no changes needed
+            return
+        else
+            echo "ERROR YUBIKEY_CHALLENGE alreaady defined with a diffrent value in /etc/ykluks.cfg"
+            exit 1
+        fi
+    fi
+    echo "YUBIKEY_CHALLENGE=\"$YUBIKEY_CHALLENGE\"" >> /etc/ykluks.cfg
+}
+
 LuksAddKey () {
     if [ "$CONCATENATE" = "1" ]
     then
@@ -321,6 +344,9 @@ LuksCheckSlot
 
 # Is LUSK_SLOT is not definde find a free slot
 LuksFindFreeSlot
+
+# if -1 "1FA" is enable update /etc/ykluks.cfg with YUBIKEY_CHALLENGE
+YubiKeyEnable1FA
 
 # Check if YubiKey is present
 
