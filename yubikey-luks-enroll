@@ -155,6 +155,19 @@ LuskDeviceCheck () {
     fi
 }
 
+LuksCheckSlot () {
+    if [ -z "$LUKS_SLOT" ]
+    then
+        return
+    fi
+
+    if cryptsetup luksDump "$LUKS_DEVICE" | grep -q "$LUKS_SLOT: luks2"
+    then
+        echo "Slot already in use: $LUKS_SLOT"
+        exit 1
+    fi
+}
+
 ClearLuksSlot () {
     echo "This script will utilize the YubiKey slot $YUBIKEY_SLOT for slot $LUKS_SLOT on drive $LUKS_DEVICE.  If this is not what you intended, exit now!"
 
@@ -281,6 +294,9 @@ LuskDeviceFind
 
 #check if LUSK_DEVICE is valid
 LuskDeviceCheck
+
+# Check if Slot is in use
+LuksCheckSlot
 
 # Check if YubiKey is present
 
