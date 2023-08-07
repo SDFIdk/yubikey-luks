@@ -333,19 +333,19 @@ CheckDependencies
 ArgumentHandeling "$@"
 ClearLuksSlot
 
-# if -d ioption is not used auto detect device
+# If -d ioption is not used auto detect device
 LuskDeviceFind
 
-#check if LUSK_DEVICE is valid
+# Check if LUSK_DEVICE is valid
 LuskDeviceCheck
 
 # Check if Slot is in use
 LuksCheckSlot
 
-# Is LUSK_SLOT is not definde find a free slot
+# If -s LUSK_SLOT is not definde find a free slot
 LuksFindFreeSlot
 
-# if -1 "1FA" is enable update /etc/ykluks.cfg with YUBIKEY_CHALLENGE
+# If -1 "1FA" is enable update /etc/ykluks.cfg with YUBIKEY_CHALLENGE
 YubiKeyEnable1FA
 
 # Check if YubiKey is present
