@@ -29,8 +29,52 @@ DefaultConfig () {
 	fi
 }
 
+CheckDependencies () {
+	if ! command -v cryptsetup &> /dev/null
+	then
+		echo "cryptsetup-bin could not be found"
+		echo "Please install it with"
+		echo "apt-get install cryptsetup-bin"
+		exit 1
+	fi
+
+	if ! command -v mkinitramfs &> /dev/null
+	then
+		echo "mkinitramfs could not be found"
+		echo "Please install it with"
+		echo "apt-get install initramfs-tools-core"
+		exit 1
+	fi
+
+	if ! command -v ykpersonalize &> /dev/null
+	then
+		echo "ykpersonalize could not be found"
+		echo "Please install it with"
+		echo "apt-get install yubikey-personalization"
+		exit 1
+	fi
+
+	if ! command -v yubikey-luks-enroll &> /dev/null
+	then
+		echo "yubikey-luks-enroll could not be found"
+		echo "Please install it with"
+		echo "apt-get install yubikey-luks"
+		exit 1
+	fi
+
+	if ! command -v sed &> /dev/null
+	then
+		echo "sed could not be found"
+		echo "Please install it with"
+		echo "apt-get install sed"
+		exit 1
+	fi
+}
+
+
 CheckIfRoot
 DefaultConfig
+CheckDependencies
 
 while getopts ":s:d:y:p:hcv" opt
 do
