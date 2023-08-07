@@ -94,36 +94,36 @@ do
     then
         break
     fi
-    printf "Please insert a yubikey and press enter."
-    read -r _ <&1
+    read -n 1 -s -r -p "Please insert YubiKey and press any key."
+    echo ""
 done
 
 # Ask for password if 1FA is not configured
 if [ -z "$YUBIKEY_CHALLENGE" ]
 then
     YUBIKEY_CHALLENGE=$(/lib/cryptsetup/askpass "Please enter the yubikey challenge password. This is the password that will only work while your yubikey is installed in your computer:")
-if [ "$DBG" = "1" ]
-then
+    if [ "$DBG" = "1" ]
+    then
         echo "Password: $YUBIKEY_CHALLENGE"
-fi
+    fi
 
     if [ "$YUBIKEY_CHALLENGE" != "$(/lib/cryptsetup/askpass "Please enter the yubikey challenge password again:")" ]
-then
-    echo "Passwords do not match"
-    exit 1
+    then
+        echo "Passwords do not match"
+        exit 1
     fi
 fi
 
 if [ "$HASH" = "1" ]
 then
-    YUBIKEY_CHALLENGE=$(printf %s "$YUBIKEY_CHALLENGE" | sha256sum | awk '{print $1}')
+    YUBIKEY_CHALLENGE=$(echo -n "$YUBIKEY_CHALLENGE" | sha256sum | awk '{print $1}')
     if [ "$DBG" = "1" ]
     then
         echo "Password hash: $YUBIKEY_CHALLENGE"
     fi
 fi
 
-YUBIKEY_RESPONCE="$(printf %s "$YUBIKEY_CHALLENGE" | ykchalresp -"$YUBIKEY_SLOT" -i- 2>/dev/null || true)"
+YUBIKEY_RESPONCE="$(echo -n "$YUBIKEY_CHALLENGE" | ykchalresp -"$YUBIKEY_SLOT" -i- 2>/dev/null || true)"
 if [ "$DBG" = "1" ]
 then
     echo "Yubikey response: $YUBIKEY_RESPONCE"
@@ -138,8 +138,8 @@ fi
 if [ -z "$LUKS_PASSWORD" ]
 then
     LUKS_PASSWORD=$(/lib/cryptsetup/askpass "Please provide an existing passphrase to LUKS. This is NOT the passphrase you just entered, this is the passphrase that you currently use to unlock your LUKS encrypted drive:")
-if [ "$DBG" = "1" ]
-then
+    if [ "$DBG" = "1" ]
+    then
         echo "LUKS passphrase: $LUKS_PASSWORD"
     fi
 fi
