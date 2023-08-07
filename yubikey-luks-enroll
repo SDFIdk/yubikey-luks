@@ -151,6 +151,18 @@ LuksPassword () {
     fi
 }
 
+YubiKeyDetect () {
+while true
+do
+    if lsusb | grep -iq 'yubico'
+    then
+        break
+    fi
+    read -n 1 -s -r -p "Please insert YubiKey and press any key."
+    echo ""
+done
+}
+
 YubiKeyChallenge () {
     # Ask for password if 1FA is not configured
     if [ -z "$YUBIKEY_CHALLENGE" ]
@@ -220,16 +232,7 @@ ClearLuksSlot
 
 echo "Adding yubikey to initrd"
 
-while true
-do
-    if lsusb | grep -iq 'yubico'
-    then
-        break
-    fi
-    read -n 1 -s -r -p "Please insert YubiKey and press any key."
-    echo ""
-done
-
+YubiKeyDetect
 YubiKeyChallenge
 YubiKeyHash
 YubiKeyResponce
