@@ -168,6 +168,27 @@ LuksCheckSlot () {
     fi
 }
 
+LuksFindFreeSlot () {
+    if [ -n "LUSK_SLOT" ]
+    then
+        return
+    fi
+    # List of Slots that are in use
+    SlotsInUse=$(cryptsetup luksDump "$LUKS_DEVICE" | grep ": luks2" | cut -d ":" -f 1 | awk '{print $1}'|tr -d '\n')
+
+    # Travers all 8 slots until you find one that is not un use
+    for SLOT in {0..7}
+    do
+        if echo "$SlotsInUse" | grep -q -F -v "$SLOT"
+        then
+            LUSK_SLOT=$SLOT
+            return
+        fi
+    done
+    echo "All Luks slots are in use"
+    exit 1
+}
+
 ClearLuksSlot () {
     echo "This script will utilize the YubiKey slot $YUBIKEY_SLOT for slot $LUKS_SLOT on drive $LUKS_DEVICE.  If this is not what you intended, exit now!"
 
@@ -297,6 +318,9 @@ LuskDeviceCheck
 
 # Check if Slot is in use
 LuksCheckSlot
+
+# Is LUSK_SLOT is not definde find a free slot
+LuksFindFreeSlot
 
 # Check if YubiKey is present
 
