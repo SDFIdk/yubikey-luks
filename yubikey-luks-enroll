@@ -194,6 +194,23 @@ YubiKeyResponce () {
     fi
 }
 
+LuksAddKey () {
+    if [ "$CONCATENATE" = "1" ]
+    then
+        printf '%s\n' "$LUKS_PASSWORD" "$YUBIKEY_CHALLENGE$YUBIKEY_RESPONCE" "$YUBIKEY_CHALLENGE$YUBIKEY_RESPONCE" | cryptsetup --key-slot="$LUKS_SLOT" luksAddKey "$DISK" 2>&1;
+        if [ "$DBG" = "1" ]
+        then
+            echo "LUKS key: $YUBIKEY_CHALLENGE$YUBIKEY_RESPONCE"
+        fi
+    else
+        printf '%s\n' "$LUKS_PASSWORD" "$YUBIKEY_RESPONCE" "$YUBIKEY_RESPONCE" | cryptsetup --key-slot="$LUKS_SLOT" luksAddKey "$DISK" 2>&1;
+        if [ "$DBG" = "1" ]
+        then
+            echo "LUKS key: $YUBIKEY_RESPONCE"
+        fi
+    fi
+}
+
 
 CheckIfRoot
 DefaultConfig
@@ -217,20 +234,5 @@ YubiKeyChallenge
 YubiKeyHash
 YubiKeyResponce
 LuksPassword
-
-if [ "$CONCATENATE" = "1" ]
-then
-    printf '%s\n' "$LUKS_PASSWORD" "$YUBIKEY_CHALLENGE$YUBIKEY_RESPONCE" "$YUBIKEY_CHALLENGE$YUBIKEY_RESPONCE" | cryptsetup --key-slot="$LUKS_SLOT" luksAddKey "$DISK" 2>&1;
-    if [ "$DBG" = "1" ]
-    then
-        echo "LUKS key: $YUBIKEY_CHALLENGE$YUBIKEY_RESPONCE"
-    fi
-else
-    printf '%s\n' "$LUKS_PASSWORD" "$YUBIKEY_RESPONCE" "$YUBIKEY_RESPONCE" | cryptsetup --key-slot="$LUKS_SLOT" luksAddKey "$DISK" 2>&1;
-    if [ "$DBG" = "1" ]
-    then
-        echo "LUKS key: $YUBIKEY_RESPONCE"
-    fi
-fi
-
+LuksAddKey
 exit 0
