@@ -145,6 +145,16 @@ LuskDeviceFind () {
     LUKS_DEVICE=$(cryptsetup status "$CRYPTTAB_VOLUME" | awk '/device:/ {print $2}')
 }
 
+LuskDeviceCheck () {
+    if cryptsetup isLuks "$LUKS_DEVICE"
+    then
+        echo "Using \"$LUKS_DEVICE\", which appears to be a valid LUKS encrypted device..."
+    else
+        echo "Device \"$LUKS_DEVICE\" does not appear to be a valid LUKS encrypted device."
+        exit 1
+    fi
+}
+
 ClearLuksSlot () {
     echo "This script will utilize the YubiKey slot $YUBIKEY_SLOT for slot $LUKS_SLOT on drive $LUKS_DEVICE.  If this is not what you intended, exit now!"
 
@@ -252,6 +262,9 @@ ClearLuksSlot
 
 # if -d ioption is not used auto detect device
 LuskDeviceFind
+
+#check if LUSK_DEVICE is valid
+LuskDeviceCheck
 
 # Check if YubiKey is present
 
