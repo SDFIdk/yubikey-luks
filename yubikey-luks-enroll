@@ -188,6 +188,22 @@ do
 done
 }
 
+YubiKeyLuksCheck () {
+    echo "Check where the YubiKey 1FA already exist in LUKS"
+    echo
+    if [ -z "$YUBIKEY_CHALLENGE" ]
+    then
+        # 1FA not enabled
+        return
+    fi
+
+    if echo -n "$YUBIKEY_CHALLENGE" | ykchalresp -$YUBIKEY_SLOT -i- | cryptsetup open --test-passphrase "$LUKS_DEVICE"
+    then
+        echo "The YubiKey 1FA is enabled to Decrypt $LUKS_DEVICE"
+        exit 0
+    fi
+}
+
 YubiKeyChallenge () {
     # Ask for password if 1FA is not configured
     if [ -z "$YUBIKEY_CHALLENGE" ]
@@ -269,6 +285,10 @@ LuskDeviceCheck
 # Check if YubiKey is present
 
 YubiKeyDetect
+
+# Check if YubiKey can decrypt LUKS drive
+YubiKeyLuksCheck
+
 YubiKeyChallenge
 YubiKeyHash
 YubiKeyResponce
