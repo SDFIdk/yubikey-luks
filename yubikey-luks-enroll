@@ -71,67 +71,70 @@ CheckDependencies () {
 	fi
 }
 
+ArgumentHandeling () {
+    while getopts ":s:d:y:p:hcv" opt
+    do
+        case $opt in
+            s)
+                LUKS_SLOT=$OPTARG
+                echo "setting slot to $OPTARG."
+                ;;
+            d)
+                DISK=$OPTARG
+                echo "setting disk to $OPTARG."
+                ;;
+            y)
+                if [ ! "$YUBIKEY_SLOT" = "$OPTARG" ]
+                then
+                    echo "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
+                    echo "WARNING: You are enrolling slot $OPTARG of your yubikey."
+                    echo "During boot, slot $YUBIKEY_SLOT is configured to be used (/etc/ykluks.cfg)."
+                    echo "You will therefore not be able to boot using this setup!"
+                    echo "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
+                fi
+                YUBIKEY_SLOT=$OPTARG
+                echo "setting yubikey slot to $OPTARG."
+                ;;
+            p)
+                if [ -f "$OPTARG" ]
+                then
+                    LUKS_PASSWORD=$(echo -n "$OPTARG")
+                    echo "Reading LUKS password from $OPTARG."
+                else
+                    echo "LUKS password file not found"
+                    exit 1
+                fi
+                ;;
+            c)
+                CLEAR_SLOT=1
+                echo "clearing slot"
+                ;;
+            v)  DBG=1
+                echo "debugging enabled"
+                ;;
+            h)
+                echo
+                echo " -d <partition>: set the partition (Default=Auto Detect"
+                echo " -s <slot>     : set the LUKS slot (Default=Auto Detect)"
+                echo " -y <slot>     : set the yubikey slot to use (Default=2)"
+                echo " -p <file>     : file that contain LUKS password"
+                echo " -c            : clear the slot prior to writing"
+                echo " -v            : show input/output in cleartext"
+                echo
+                exit 1
+                ;;
+            \?)
+                echo "Invalid option: -$OPTARG" >&2
+                ;;
+        esac
+    done
+}
 
 CheckIfRoot
 DefaultConfig
 CheckDependencies
+ArgumentHandeling "$@"
 
-while getopts ":s:d:y:p:hcv" opt
-do
-    case $opt in
-        s)
-            LUKS_SLOT=$OPTARG
-            echo "setting slot to $OPTARG."
-            ;;
-        d)
-            DISK=$OPTARG
-            echo "setting disk to $OPTARG."
-            ;;
-        y)
-            if [ ! "$YUBIKEY_SLOT" = "$OPTARG" ]
-            then
-                echo "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
-                echo "WARNING: You are enrolling slot $OPTARG of your yubikey."
-                echo "During boot, slot $YUBIKEY_SLOT is configured to be used (/etc/ykluks.cfg)."
-                echo "You will therefore not be able to boot using this setup!"
-                echo "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
-            fi
-            YUBIKEY_SLOT=$OPTARG
-            echo "setting yubikey slot to $OPTARG."
-            ;;
-        p)
-            if [ -f "$OPTARG" ]
-            then
-                LUKS_PASSWORD=$(echo -n "$OPTARG")
-                echo "Reading LUKS password from $OPTARG."
-            else
-                echo "LUKS password file not found"
-                exit 1
-            fi
-            ;;
-        c)
-            CLEAR_SLOT=1
-            echo "clearing slot"
-            ;;
-        v)  DBG=1
-            echo "debugging enabled"
-            ;;
-        h)
-            echo
-            echo " -d <partition>: set the partition (Default=Auto Detect"
-            echo " -s <slot>     : set the LUKS slot (Default=Auto Detect)"
-            echo " -y <slot>     : set the yubikey slot to use (Default=2)"
-            echo " -p <file>     : file that contain LUKS password"
-            echo " -c            : clear the slot prior to writing"
-            echo " -v            : show input/output in cleartext"
-            echo
-            exit 1
-            ;;
-        \?)
-            echo "Invalid option: -$OPTARG" >&2
-            ;;
-    esac
-done
 
 echo "This script will utilize the YubiKey slot $YUBIKEY_SLOT for slot $LUKS_SLOT on drive $DISK.  If this is not what you intended, exit now!"
 
