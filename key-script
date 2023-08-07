@@ -1,4 +1,4 @@
-#! /bin/sh
+#!/bin/bash
 #
 # This is /sbin/ykluks-keyscript, which gets called when unlocking the disk
 #
@@ -13,15 +13,14 @@ YUBIKEY_SLOT=2
 # Import config
 . /etc/ykluks.cfg
 
-message()
-{
+message() {
     if [ -x /bin/plymouth ] && plymouth --ping
     then
         plymouth message --text="$*"
     else
         echo "$@" >&2
     fi
-    return 0
+    return
 }
 
 # Check if YubiKey is missing or 1FA is enabled
@@ -67,4 +66,4 @@ else
     echo -n "$PASSWORD"
 fi
 
-exit 0
+exit
