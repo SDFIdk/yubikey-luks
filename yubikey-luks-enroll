@@ -224,13 +224,18 @@ LuksAddKey () {
 }
 
 
+# Fail if not run as ROOT
 CheckIfRoot
+
 DefaultConfig
+
+# Check that the required apps are installed
 CheckDependencies
+
 ArgumentHandeling "$@"
 ClearLuksSlot
 
-echo "Adding yubikey to initrd"
+# Check if YubiKey is present
 
 YubiKeyDetect
 YubiKeyChallenge
