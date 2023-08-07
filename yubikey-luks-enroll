@@ -1,11 +1,5 @@
 #!/bin/bash
 
-LUKS_SLOT=7
-DISK="/dev/sda3"
-CLEAR_SLOT=0
-DBG=0
-YUBIKEY_SLOT=2 #Set this in case the value is missing in /etc/ykluks.cfg
-
 CheckIfRoot () {
 	# Check if running as root
 	if [ "$EUID" != 0 ]; then
@@ -16,10 +10,27 @@ CheckIfRoot () {
 }
 
 
-set -e
-. /etc/ykluks.cfg
+DefaultConfig () {
+	#Set this in case the value is missing in /etc/ykluks.cfg
+	CONCATENATE=0
+	HASH=0
+	WELCOME_TEXT="Please insert YubiKey and press enter or enter a valid passphrase ..."
+	YUBIKEY_SLOT=2
+	#YUBIKEY_CHALLENGE="YubiKey Password" Set this in /etc/ykluks.conf to enable 1FA
+    LUKS_SLOT=7
+    DISK="/dev/sda3"
+    CLEAR_SLOT=0
+    DBG=0
+
+
+	if [ -f /etc/ykluks.cfg ]
+	then
+		. /etc/ykluks.cfg
+	fi
+}
 
 CheckIfRoot
+DefaultConfig
 
 while getopts ":s:d:y:p:hcv" opt
 do
