@@ -180,6 +180,20 @@ YubiKeyHash () {
     fi
 }
 
+YubiKeyResponce () {
+    YUBIKEY_RESPONCE="$(echo -n "$YUBIKEY_CHALLENGE" | ykchalresp -"$YUBIKEY_SLOT" -i- 2>/dev/null || true)"
+    if [ "$DBG" = "1" ]
+    then
+        echo "Yubikey response: $YUBIKEY_RESPONCE"
+    fi
+
+    if [ -z "$YUBIKEY_RESPONCE" ]
+    then
+        echo "Yubikey not available or timed out waiting for button press"
+        exit 1
+    fi
+}
+
 
 CheckIfRoot
 DefaultConfig
@@ -201,19 +215,7 @@ done
 
 YubiKeyChallenge
 YubiKeyHash
-
-YUBIKEY_RESPONCE="$(echo -n "$YUBIKEY_CHALLENGE" | ykchalresp -"$YUBIKEY_SLOT" -i- 2>/dev/null || true)"
-if [ "$DBG" = "1" ]
-then
-    echo "Yubikey response: $YUBIKEY_RESPONCE"
-fi
-
-if [ -z "$YUBIKEY_RESPONCE" ]
-then
-    echo "Yubikey not available or timed out waiting for button press"
-    exit 1
-fi
-
+YubiKeyResponce
 LuksPassword
 
 if [ "$CONCATENATE" = "1" ]
