@@ -18,7 +18,6 @@ DefaultConfig () {
 	YUBIKEY_SLOT=2
 	#YUBIKEY_CHALLENGE="YubiKey Password" Set this in /etc/ykluks.conf to enable 1FA
     LUKS_SLOT=7
-    LUKS_DEVICE="/dev/sda3"
     CLEAR_SLOT=0
     DBG=0
 
@@ -130,6 +129,22 @@ ArgumentHandeling () {
     done
 }
 
+LuskDeviceFind () {
+    if [ -n "LUKS_DEVICE" ]
+        return
+        # we already have a device
+    fi
+    CRYPTTAB_VOLUME=$(head --lines=1 /etc/crypttab | awk '{print $1}')
+    if [ -z "$CRYPTTAB_VOLUME" ]
+    then
+        echo "No Encrypted drive found"
+        echo "couldn't find one on the first line of /etc/crypttab."
+            echo "Exiting with no changes made to the system."
+        exit 1
+    fi
+    LUKS_DEVICE=$(cryptsetup status "$CRYPTTAB_VOLUME" | awk '/device:/ {print $2}')
+}
+
 ClearLuksSlot () {
     echo "This script will utilize the YubiKey slot $YUBIKEY_SLOT for slot $LUKS_SLOT on drive $LUKS_DEVICE.  If this is not what you intended, exit now!"
 
@@ -234,6 +249,9 @@ CheckDependencies
 
 ArgumentHandeling "$@"
 ClearLuksSlot
+
+# if -d ioption is not used auto detect device
+LuskDeviceFind
 
 # Check if YubiKey is present
 
