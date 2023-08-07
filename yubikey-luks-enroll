@@ -15,7 +15,7 @@ then
     exit 1
 fi
 
-while getopts ":s:d:y:hcv" opt
+while getopts ":s:d:y:p:hcv" opt
 do
     case $opt in
         s)
@@ -38,6 +38,16 @@ do
             YUBIKEY_SLOT=$OPTARG
             echo "setting yubikey slot to $OPTARG."
             ;;
+        p)
+            if [ -f "$OPTARG" ]
+            then
+                LUKS_PASSWORD=$(echo -n "$OPTARG")
+                echo "Reading LUKS password from $OPTARG."
+            else
+                echo "LUKS password file not found"
+                exit 1
+            fi
+            ;;
         c)
             CLEAR_SLOT=1
             echo "clearing slot"
@@ -47,9 +57,10 @@ do
             ;;
         h)
             echo
-            echo " -d <partition>: set the partition"
-            echo " -s <slot>     : set the LUKS slot"
-            echo " -y <slot>     : set the yubikey slot to use"
+            echo " -d <partition>: set the partition (Default=Auto Detect"
+            echo " -s <slot>     : set the LUKS slot (Default=Auto Detect)"
+            echo " -y <slot>     : set the yubikey slot to use (Default=2)"
+            echo " -p <file>     : file that contain LUKS password"
             echo " -c            : clear the slot prior to writing"
             echo " -v            : show input/output in cleartext"
             echo
