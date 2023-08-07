@@ -169,6 +169,17 @@ YubiKeyChallenge () {
     fi
 }
 
+YubiKeyHash () {
+    if [ "$HASH" = "1" ]
+    then
+        YUBIKEY_CHALLENGE=$(echo -n "$YUBIKEY_CHALLENGE" | sha256sum | awk '{print $1}')
+        if [ "$DBG" = "1" ]
+        then
+            echo "Password hash: $YUBIKEY_CHALLENGE"
+        fi
+    fi
+}
+
 
 CheckIfRoot
 DefaultConfig
@@ -189,15 +200,7 @@ do
 done
 
 YubiKeyChallenge
-
-if [ "$HASH" = "1" ]
-then
-    YUBIKEY_CHALLENGE=$(echo -n "$YUBIKEY_CHALLENGE" | sha256sum | awk '{print $1}')
-    if [ "$DBG" = "1" ]
-    then
-        echo "Password hash: $YUBIKEY_CHALLENGE"
-    fi
-fi
+YubiKeyHash
 
 YUBIKEY_RESPONCE="$(echo -n "$YUBIKEY_CHALLENGE" | ykchalresp -"$YUBIKEY_SLOT" -i- 2>/dev/null || true)"
 if [ "$DBG" = "1" ]
