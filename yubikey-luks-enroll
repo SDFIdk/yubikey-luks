@@ -151,6 +151,24 @@ LuksPassword () {
     fi
 }
 
+YubiKeyChallenge () {
+    # Ask for password if 1FA is not configured
+    if [ -z "$YUBIKEY_CHALLENGE" ]
+    then
+        YUBIKEY_CHALLENGE=$(/lib/cryptsetup/askpass "Please enter the yubikey challenge password. This is the password that will only work while your yubikey is installed in your computer:")
+        if [ "$DBG" = "1" ]
+        then
+            echo "Password: $YUBIKEY_CHALLENGE"
+        fi
+
+        if [ "$YUBIKEY_CHALLENGE" != "$(/lib/cryptsetup/askpass "Please enter the yubikey challenge password again:")" ]
+        then
+            echo "Passwords do not match"
+            exit 1
+        fi
+    fi
+}
+
 
 CheckIfRoot
 DefaultConfig
@@ -170,21 +188,7 @@ do
     echo ""
 done
 
-# Ask for password if 1FA is not configured
-if [ -z "$YUBIKEY_CHALLENGE" ]
-then
-    YUBIKEY_CHALLENGE=$(/lib/cryptsetup/askpass "Please enter the yubikey challenge password. This is the password that will only work while your yubikey is installed in your computer:")
-    if [ "$DBG" = "1" ]
-    then
-        echo "Password: $YUBIKEY_CHALLENGE"
-    fi
-
-    if [ "$YUBIKEY_CHALLENGE" != "$(/lib/cryptsetup/askpass "Please enter the yubikey challenge password again:")" ]
-    then
-        echo "Passwords do not match"
-        exit 1
-    fi
-fi
+YubiKeyChallenge
 
 if [ "$HASH" = "1" ]
 then
