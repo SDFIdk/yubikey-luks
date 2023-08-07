@@ -140,6 +140,17 @@ ClearLuksSlot () {
     fi
 }
 
+LuksPassword () {
+    if [ -z "$LUKS_PASSWORD" ]
+    then
+        LUKS_PASSWORD=$(/lib/cryptsetup/askpass "Please provide an existing passphrase to LUKS. This is NOT the passphrase you just entered, this is the passphrase that you currently use to unlock your LUKS encrypted drive:")
+        if [ "$DBG" = "1" ]
+        then
+            echo "LUKS passphrase: $LUKS_PASSWORD"
+        fi
+    fi
+}
+
 
 CheckIfRoot
 DefaultConfig
@@ -196,14 +207,7 @@ then
     exit 1
 fi
 
-if [ -z "$LUKS_PASSWORD" ]
-then
-    LUKS_PASSWORD=$(/lib/cryptsetup/askpass "Please provide an existing passphrase to LUKS. This is NOT the passphrase you just entered, this is the passphrase that you currently use to unlock your LUKS encrypted drive:")
-    if [ "$DBG" = "1" ]
-    then
-        echo "LUKS passphrase: $LUKS_PASSWORD"
-    fi
-fi
+LuksPassword
 
 if [ "$CONCATENATE" = "1" ]
 then
