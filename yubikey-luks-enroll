@@ -220,6 +220,23 @@ LuksPassword () {
     fi
 }
 
+LuksAddYubiKey () {
+    if [ "$CONCATENATE" = "1" ]
+    then
+        printf '%s\n' "$LUKS_PASSWORD" "$YUBIKEY_CHALLENGE$YUBIKEY_RESPONCE" "$YUBIKEY_CHALLENGE$YUBIKEY_RESPONCE" | cryptsetup --key-slot="$LUKS_SLOT" luksAddKey "$LUKS_DEVICE" 2>&1;
+        if [ "$DBG" = "1" ]
+        then
+            echo "LUKS key: $YUBIKEY_CHALLENGE$YUBIKEY_RESPONCE"
+        fi
+    else
+        printf '%s\n' "$LUKS_PASSWORD" "$YUBIKEY_RESPONCE" "$YUBIKEY_RESPONCE" | cryptsetup --key-slot="$LUKS_SLOT" luksAddKey "$LUKS_DEVICE" 2>&1;
+        if [ "$DBG" = "1" ]
+        then
+            echo "LUKS key: $YUBIKEY_RESPONCE"
+        fi
+    fi
+}
+
 YubiKeyInit () {
     ykpersonalize -y -$YUBIKEY_SLOT -ochal-resp -ochal-hmac -ohmac-lt64 -oserial-api-visible > /dev/null 2>&1
 }
@@ -318,24 +335,6 @@ YubiKeyEnable1FA () {
     echo "YUBIKEY_CHALLENGE=\"$YUBIKEY_CHALLENGE\"" >> /etc/ykluks.cfg
 }
 
-LuksAddKey () {
-    if [ "$CONCATENATE" = "1" ]
-    then
-        printf '%s\n' "$LUKS_PASSWORD" "$YUBIKEY_CHALLENGE$YUBIKEY_RESPONCE" "$YUBIKEY_CHALLENGE$YUBIKEY_RESPONCE" | cryptsetup --key-slot="$LUKS_SLOT" luksAddKey "$LUKS_DEVICE" 2>&1;
-        if [ "$DBG" = "1" ]
-        then
-            echo "LUKS key: $YUBIKEY_CHALLENGE$YUBIKEY_RESPONCE"
-        fi
-    else
-        printf '%s\n' "$LUKS_PASSWORD" "$YUBIKEY_RESPONCE" "$YUBIKEY_RESPONCE" | cryptsetup --key-slot="$LUKS_SLOT" luksAddKey "$LUKS_DEVICE" 2>&1;
-        if [ "$DBG" = "1" ]
-        then
-            echo "LUKS key: $YUBIKEY_RESPONCE"
-        fi
-    fi
-}
-
-
 # Fail if not run as ROOT
 CheckIfRoot
 
@@ -373,5 +372,5 @@ YubiKeyChallenge
 YubiKeyHash
 YubiKeyResponce
 LuksPassword
-LuksAddKey
+LuksAddYubiKey
 exit
