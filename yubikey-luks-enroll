@@ -143,7 +143,7 @@ LuskDeviceFind () {
     CRYPTTAB_VOLUME=$(head --lines=1 /etc/crypttab | awk '{print $1}')
     if [ -z "$CRYPTTAB_VOLUME" ]
     then
-        echo "No Encrypted drive found"
+        echo "No Encrypted device found"
         echo "couldn't find one on the first line of /etc/crypttab."
         echo "Exiting with no changes made to the system."
         exit 1
@@ -200,7 +200,7 @@ LuksFindFreeSlot () {
 }
 
 LuskSlotClear () {
-    echo "This script will utilize the YubiKey slot $YUBIKEY_SLOT for slot $LUKS_SLOT on drive $LUKS_DEVICE.  If this is not what you intended, exit now!"
+    echo "This script will utilize the YubiKey slot $YUBIKEY_SLOT for slot $LUKS_SLOT on device $LUKS_DEVICE.  If this is not what you intended, exit now!"
 
     if [ "$CLEAR_SLOT" = "1" ]
     then
@@ -212,7 +212,7 @@ LuskSlotClear () {
 LuksPassword () {
     if [ -z "$LUKS_PASSWORD" ]
     then
-        LUKS_PASSWORD=$(/lib/cryptsetup/askpass "Please provide an existing passphrase to LUKS. This is NOT the passphrase you just entered, this is the passphrase that you currently use to unlock your LUKS encrypted drive:")
+        LUKS_PASSWORD=$(/lib/cryptsetup/askpass "Please provide an existing passphrase to LUKS. This is NOT the passphrase you just entered, this is the passphrase that you currently use to unlock your LUKS encrypted device:")
         if [ "$DBG" = "1" ]
         then
             echo "LUKS passphrase: $LUKS_PASSWORD"
@@ -356,6 +356,8 @@ DefaultConfig
 CheckDependencies
 
 ArgumentHandeling "$@"
+
+# Clear slot before we check if it is free
 LuskSlotClear
 
 # If -d ioption is not used auto detect device
@@ -374,15 +376,23 @@ LuksFindFreeSlot
 YubiKeyEnable1FA
 
 # Check if YubiKey is present
-
 YubiKeyDetect
 
-# Check if YubiKey can decrypt LUKS drive
+# Check if YubiKey can decrypt LUKS device
 YubiKeyLuksCheck
 
+# Ask user to create a passfrase if 1FA is not enabled
 YubiKeyChallenge
+
+# Hash Password if enabled in config
 YubiKeyHash
+
+# Get Responce to Challenge from YubiKey
 YubiKeyResponce
+
+# Ask User user for Password to unlock Lusk device
 LuksPassword
+
+# add YubiKey Responce to Lusk device
 LuksAddYubiKey
 exit
