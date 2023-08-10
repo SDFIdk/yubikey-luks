@@ -37,7 +37,7 @@ fi
 # Check if user has press enter after inserting YubiKey (remove 1FA warning)
 if [ -z "$PASSWORD" ] && [ -n "$YUBIKEY_CHALLENGE" ]
 then
-	CHALLENGE="$YUBIKEY_CHALLENGE"
+    PASSWORD="$YUBIKEY_CHALLENGE"
 fi
 
 # Check if YubiKey has been inserted during promt
