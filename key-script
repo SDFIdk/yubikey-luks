@@ -26,12 +26,12 @@ message() {
 # Check if YubiKey is missing or 1FA is enabled
 if [ -z "$YUBIKEY_CHALLENGE" ] || ! ykinfo -q -"$YUBIKEY_SLOT" >/dev/null 2>&1
 then
-	if [ -x /bin/plymouth ] && plymouth --ping
-	then
-		PASSWORD="$(plymouth ask-for-password --prompt "$WELCOME_TEXT")"
-	else
-		PASSWORD="$(/lib/cryptsetup/askpass "$WELCOME_TEXT")"
-	fi
+    if [ -x /bin/plymouth ] && plymouth --ping
+    then
+        PASSWORD="$(plymouth ask-for-password --prompt "$WELCOME_TEXT")"
+    else
+        PASSWORD="$(/lib/cryptsetup/askpass "$WELCOME_TEXT")"
+    fi
 fi
 
 # Check if user has press enter after inserting YubiKey (remove 1FA warning)
