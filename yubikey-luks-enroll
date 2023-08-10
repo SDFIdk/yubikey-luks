@@ -128,6 +128,7 @@ ArgumentHandeling () {
                 ;;
             \?)
                 echo "Invalid option: -$OPTARG" >&2
+                exit 1
                 ;;
         esac
     done
@@ -366,7 +367,7 @@ YubiKeyCrypttab () {
         if grep -F ykluks-keyscript /etc/crypttab|grep -q "$CRYPTTAB_VOLUME"
         then
             echo "No changes needed"
-            exit 0
+            exit
         else
             echo "ERROR: please manualy check that it is correct"
             echo "# e.g. this line: $CRYPTTAB_VOLUME UUID=XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX none luks,discard"
@@ -388,14 +389,10 @@ YubiKeyCrypttab () {
         exit 1
     fi
 
-    echo "Backing up /etc/crypttab to /etc/crypttab.bak, then updating it to run ykluks-keyscript on decrypt..."
-    echo
-    cp /etc/crypttab /etc/crypttab.bak
+    # Updating /etc/crypttab
     sed -i 's%$%,keyscript=/usr/share/yubikey-luks/ykluks-keyscript%' /etc/crypttab
 
-    echo "Copying the current initramfs just in case, then updating the initramfs with auto unlocking from YubiKey..."
-    echo
-    cp /boot/initrd.img-"$(uname -r)" /boot/initrd.img-"$(uname -r)".orig
+    # Updating initramfs
     update-initramfs -u
 }
 
