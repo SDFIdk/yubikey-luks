@@ -79,7 +79,7 @@ ArgumentHandeling () {
                 ;;
             d)
                 LUKS_DEVICE=$OPTARG
-                echo "setting disk to $OPTARG."
+                echo "setting device to $OPTARG."
                 ;;
             y)
                 if [ ! "$YUBIKEY_SLOT" = "$OPTARG" ]
@@ -348,6 +348,18 @@ YubiKeyUpdateConfig () {
 }
 
 YubiKeyCrypttab () {
+    if [ -z "$CRYPTTAB_VOLUME" ]
+    then 
+        echo "Please update /etc/crypttab to include this"
+        echo "In order to use yubikey-luks for unlocking LUKS encrypted volume at boot you must append"
+        echo "keyscript=/usr/share/yubikey-luks/ykluks-keyscript to the /etc/crypttab file."
+        echo "Example:"
+        echo "cryptroot /dev/sda none  luks,keyscript=/usr/share/yubikey-luks/ykluks-keyscript"
+        echo "After changing this file, you need to run"
+        echo "update-initramfs -u"
+        exit
+    fi
+
     if grep -F -q ykluks-keyscript /etc/crypttab
     then
         echo "/etc/crypttab already has an entry for ykluks-keyscript"
@@ -359,6 +371,8 @@ YubiKeyCrypttab () {
             echo "ERROR: please manualy check that it is correct"
             echo "# e.g. this line: $CRYPTTAB_VOLUME UUID=XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX none luks,discard"
             echo "# should become : $CRYPTTAB_VOLUME UUID=XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX none luks,discard,keyscript=/usr/share/yubikey-luks/ykluks-keyscript"
+            echo "After changing this file, you need to run"
+            echo "update-initramfs -u"
             exit 1
         fi
     fi
@@ -369,6 +383,8 @@ YubiKeyCrypttab () {
         echo "This section only update the first line of /etc/crypttab. It seems there are multiple lines, so please update the file manually."
         echo "# e.g. this line: $CRYPTTAB_VOLUME UUID=XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX none luks,discard"
         echo "# should become : $CRYPTTAB_VOLUME UUID=XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX none luks,discard,keyscript=/usr/share/yubikey-luks/ykluks-keyscript"
+        echo "After changing this file, you need to run"
+        echo "update-initramfs -u"
         exit 1
     fi
 
