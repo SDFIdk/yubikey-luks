@@ -17,10 +17,8 @@ DefaultConfig () {
     #WELCOME_TEXT="Please insert YubiKey and press enter or enter a valid passphrase ..."
     YUBIKEY_SLOT=2
     #YUBIKEY_CHALLENGE="YubiKey Password" Set this in /etc/ykluks.conf to enable 1FA
-    LUKS_SLOT=7
     CLEAR_SLOT=0
     DBG=0
-
 
     if [ -f /etc/ykluks.cfg ]
     then
