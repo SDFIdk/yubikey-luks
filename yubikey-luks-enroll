@@ -433,4 +433,8 @@ LuksPassword
 
 # Add YubiKey Responce to Lusk device
 LuksAddYubiKey
+
+# Update crypttab and initramfs
+YubiKeyCrypttab
+
 exit
