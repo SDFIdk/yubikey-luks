@@ -335,6 +335,18 @@ YubiKeyEnable1FA () {
     echo "YUBIKEY_CHALLENGE=\"$YUBIKEY_CHALLENGE\"" >> /etc/ykluks.cfg
 }
 
+YubiKeyUpdateConfig () {
+    if ! grep -F "YUBIKEY_$YUBIKEY_SERIAL" /etc/ykluks.cfg
+    then
+        echo "YUBIKEY_$YUBIKEY_SERIAL=$YUBIKEY_SLOT" >> /etc/ykluks.cfg
+    fi
+
+    if ! grep -F "YUBIKEY_SLOT" /etc/ykluks.cfg
+    then
+        echo "YUBIKEY_SLOT=$YUBIKEY_SLOT" >> /etc/ykluks.cfg
+    fi
+}
+
 # Fail if not run as ROOT
 CheckIfRoot
 
