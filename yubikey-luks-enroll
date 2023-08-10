@@ -197,7 +197,7 @@ LuksFindFreeSlot () {
     exit 1
 }
 
-ClearLuksSlot () {
+LuskSlotClear () {
     echo "This script will utilize the YubiKey slot $YUBIKEY_SLOT for slot $LUKS_SLOT on drive $LUKS_DEVICE.  If this is not what you intended, exit now!"
 
     if [ "$CLEAR_SLOT" = "1" ]
@@ -339,7 +339,7 @@ DefaultConfig
 CheckDependencies
 
 ArgumentHandeling "$@"
-ClearLuksSlot
+LuskSlotClear
 
 # If -d ioption is not used auto detect device
 LuskDeviceFind
