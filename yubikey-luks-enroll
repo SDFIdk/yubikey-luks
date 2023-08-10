@@ -386,11 +386,13 @@ YubiKeyCrypttab () {
 # Fail if not run as ROOT
 CheckIfRoot
 
+# Set default variables
 DefaultConfig
 
 # Check that the required apps are installed
 CheckDependencies
 
+# Handle user options
 ArgumentHandeling "$@"
 
 # Clear slot before we check if it is free
@@ -429,6 +431,6 @@ YubiKeyResponce
 # Ask User user for Password to unlock Lusk device
 LuksPassword
 
-# add YubiKey Responce to Lusk device
+# Add YubiKey Responce to Lusk device
 LuksAddYubiKey
 exit
