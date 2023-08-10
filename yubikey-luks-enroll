@@ -161,6 +161,7 @@ LuskDeviceCheck () {
     fi
 }
 
+# Must be called after LuskSlotClear
 LuksCheckSlot () {
     if [ -z "$LUKS_SLOT" ]
     then
@@ -177,6 +178,7 @@ LuksCheckSlot () {
 LuksFindFreeSlot () {
     if [ -n "$LUSK_SLOT" ]
     then
+        # User have manaly selectet a slot with -s option
         return
     fi
 
