@@ -1,73 +1,74 @@
 #!/bin/bash
 
 CheckIfRoot () {
-	# Check if running as root
-	if [ "$EUID" != 0 ]; then
-		echo "This script must run with root privileges, e.g.:"
-		echo "sudo $0"
-		exit 1
-	fi
+    # Check if running as root
+    if [ "$EUID" != 0 ]; then
+        echo "This script must run with root privileges, e.g.:"
+        echo "sudo $0"
+        exit 1
+    fi
 }
 
 
 DefaultConfig () {
-	#Set this in case the value is missing in /etc/ykluks.cfg
-	CONCATENATE=0
-	HASH=0
-	WELCOME_TEXT="Please insert YubiKey and press enter or enter a valid passphrase ..."
-	YUBIKEY_SLOT=2
-	#YUBIKEY_CHALLENGE="YubiKey Password" Set this in /etc/ykluks.conf to enable 1FA
+    #Set this in case the value is missing in /etc/ykluks.cfg
+    CONCATENATE=0
+    HASH=0
+    #WELCOME_TEXT="Please insert YubiKey and press enter or enter a valid passphrase ..."
+    YUBIKEY_SLOT=2
+    #YUBIKEY_CHALLENGE="YubiKey Password" Set this in /etc/ykluks.conf to enable 1FA
     LUKS_SLOT=7
     CLEAR_SLOT=0
     DBG=0
 
 
-	if [ -f /etc/ykluks.cfg ]
-	then
-		. /etc/ykluks.cfg
-	fi
+    if [ -f /etc/ykluks.cfg ]
+    then
+        # shellcheck source=ykluks.cfg
+        . /etc/ykluks.cfg
+    fi
 }
 
 CheckDependencies () {
-	if ! command -v cryptsetup &> /dev/null
-	then
-		echo "cryptsetup-bin could not be found"
-		echo "Please install it with"
-		echo "apt-get install cryptsetup-bin"
-		exit 1
-	fi
+    if ! command -v cryptsetup &> /dev/null
+    then
+        echo "cryptsetup-bin could not be found"
+        echo "Please install it with"
+        echo "apt-get install cryptsetup-bin"
+        exit 1
+    fi
 
-	if ! command -v mkinitramfs &> /dev/null
-	then
-		echo "mkinitramfs could not be found"
-		echo "Please install it with"
-		echo "apt-get install initramfs-tools-core"
-		exit 1
-	fi
+    if ! command -v mkinitramfs &> /dev/null
+    then
+        echo "mkinitramfs could not be found"
+        echo "Please install it with"
+        echo "apt-get install initramfs-tools-core"
+        exit 1
+    fi
 
-	if ! command -v ykpersonalize &> /dev/null
-	then
-		echo "ykpersonalize could not be found"
-		echo "Please install it with"
-		echo "apt-get install yubikey-personalization"
-		exit 1
-	fi
+    if ! command -v ykpersonalize &> /dev/null
+    then
+        echo "ykpersonalize could not be found"
+        echo "Please install it with"
+        echo "apt-get install yubikey-personalization"
+        exit 1
+    fi
 
-	if ! command -v yubikey-luks-enroll &> /dev/null
-	then
-		echo "yubikey-luks-enroll could not be found"
-		echo "Please install it with"
-		echo "apt-get install yubikey-luks"
-		exit 1
-	fi
+    if ! command -v yubikey-luks-enroll &> /dev/null
+    then
+        echo "yubikey-luks-enroll could not be found"
+        echo "Please install it with"
+        echo "apt-get install yubikey-luks"
+        exit 1
+    fi
 
-	if ! command -v sed &> /dev/null
-	then
-		echo "sed could not be found"
-		echo "Please install it with"
-		echo "apt-get install sed"
-		exit 1
-	fi
+    if ! command -v sed &> /dev/null
+    then
+        echo "sed could not be found"
+        echo "Please install it with"
+        echo "apt-get install sed"
+        exit 1
+    fi
 }
 
 ArgumentHandeling () {
@@ -135,16 +136,18 @@ ArgumentHandeling () {
 }
 
 LuskDeviceFind () {
-    if [ -n "LUKS_DEVICE" ]
+    if [ -n "$LUKS_DEVICE" ]
+    then
         return
         # we already have a device
     fi
+
     CRYPTTAB_VOLUME=$(head --lines=1 /etc/crypttab | awk '{print $1}')
     if [ -z "$CRYPTTAB_VOLUME" ]
     then
         echo "No Encrypted drive found"
         echo "couldn't find one on the first line of /etc/crypttab."
-            echo "Exiting with no changes made to the system."
+        echo "Exiting with no changes made to the system."
         exit 1
     fi
     LUKS_DEVICE=$(cryptsetup status "$CRYPTTAB_VOLUME" | awk '/device:/ {print $2}')
@@ -174,10 +177,11 @@ LuksCheckSlot () {
 }
 
 LuksFindFreeSlot () {
-    if [ -n "LUSK_SLOT" ]
+    if [ -n "$LUSK_SLOT" ]
     then
         return
     fi
+
     # List of Slots that are in use
     SlotsInUse=$(cryptsetup luksDump "$LUKS_DEVICE" | grep ": luks2" | cut -d ":" -f 1 | awk '{print $1}'|tr -d '\n')
 
@@ -190,6 +194,7 @@ LuksFindFreeSlot () {
             return
         fi
     done
+
     echo "All Luks slots are in use"
     exit 1
 }
@@ -222,24 +227,26 @@ YubiKeyDetect () {
         then
             break
         fi
+
         read -n 1 -s -r -p "Please insert YubiKey and press any key."
-        echo ""
+        echo
     done
 }
 
 YubiKeyLuksCheck () {
     echo "Check where the YubiKey 1FA already exist in LUKS"
     echo
+
     if [ -z "$YUBIKEY_CHALLENGE" ]
     then
         # 1FA not enabled
         return
     fi
 
-    if echo -n "$YUBIKEY_CHALLENGE" | ykchalresp -$YUBIKEY_SLOT -i- | cryptsetup open --test-passphrase "$LUKS_DEVICE"
+    if echo -n "$YUBIKEY_CHALLENGE" | ykchalresp -"$YUBIKEY_SLOT" -i- | cryptsetup open --test-passphrase "$LUKS_DEVICE"
     then
         echo "The YubiKey 1FA is enabled to Decrypt $LUKS_DEVICE"
-        exit 0
+        exit
     fi
 }
 
@@ -288,8 +295,10 @@ YubiKeyResponce () {
 
 YubiKeyEnable1FA () {
     if [ -z "$ENABLE_1FA" ]
+    then
         return
     fi
+
     if grep -q -F "YUBIKEY_CHALLENGE" /etc/ykluks.cfg
     then
         if grep -q -F "YUBIKEY_CHALLENGE=\"$YUBIKEY_CHALLENGE\"" /etc/ykluks.cfg
@@ -301,6 +310,7 @@ YubiKeyEnable1FA () {
             exit 1
         fi
     fi
+
     echo "YUBIKEY_CHALLENGE=\"$YUBIKEY_CHALLENGE\"" >> /etc/ykluks.cfg
 }
 
@@ -360,4 +370,4 @@ YubiKeyHash
 YubiKeyResponce
 LuksPassword
 LuksAddKey
-exit 0
+exit
