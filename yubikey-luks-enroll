@@ -218,6 +218,10 @@ LuksPassword () {
     fi
 }
 
+YubiKeyInit () {
+    ykpersonalize -y -$YUBIKEY_SLOT -ochal-resp -ochal-hmac -ohmac-lt64 -oserial-api-visible > /dev/null 2>&1
+}
+
 YubiKeyDetect () {
     while true
     do
