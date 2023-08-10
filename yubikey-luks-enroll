@@ -347,6 +347,42 @@ YubiKeyUpdateConfig () {
     fi
 }
 
+YubiKeyCrypttab () {
+    if grep -F -q ykluks-keyscript /etc/crypttab
+    then
+        echo "/etc/crypttab already has an entry for ykluks-keyscript"
+        if grep -F ykluks-keyscript /etc/crypttab|grep -q "$CRYPTTAB_VOLUME"
+        then
+            echo "No changes needed"
+            exit 0
+        else
+            echo "ERROR: please manualy check that it is correct"
+            echo "# e.g. this line: $CRYPTTAB_VOLUME UUID=XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX none luks,discard"
+            echo "# should become : $CRYPTTAB_VOLUME UUID=XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX none luks,discard,keyscript=/usr/share/yubikey-luks/ykluks-keyscript"
+            exit 1
+        fi
+    fi
+
+    # This will only update the first line of /etc/crypttab.  If multiple updates are needed, they must be done manually.
+    if [ "$(wc -l < /etc/crypttab)" -gt 1 ]
+    then
+        echo "This section only update the first line of /etc/crypttab. It seems there are multiple lines, so please update the file manually."
+        echo "# e.g. this line: $CRYPTTAB_VOLUME UUID=XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX none luks,discard"
+        echo "# should become : $CRYPTTAB_VOLUME UUID=XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX none luks,discard,keyscript=/usr/share/yubikey-luks/ykluks-keyscript"
+        exit 1
+    fi
+
+    echo "Backing up /etc/crypttab to /etc/crypttab.bak, then updating it to run ykluks-keyscript on decrypt..."
+    echo
+    cp /etc/crypttab /etc/crypttab.bak
+    sed -i 's%$%,keyscript=/usr/share/yubikey-luks/ykluks-keyscript%' /etc/crypttab
+
+    echo "Copying the current initramfs just in case, then updating the initramfs with auto unlocking from YubiKey..."
+    echo
+    cp /boot/initrd.img-"$(uname -r)" /boot/initrd.img-"$(uname -r)".orig
+    update-initramfs -u
+}
+
 # Fail if not run as ROOT
 CheckIfRoot
 
