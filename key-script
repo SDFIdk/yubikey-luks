@@ -32,7 +32,6 @@ then
 	else
 		PASSWORD="$(/lib/cryptsetup/askpass "$WELCOME_TEXT")"
 	fi
-    if [ -z "$cryptkeyscript" ]
 fi
 
 # Check if user has press enter after inserting YubiKey (remove 1FA warning)
