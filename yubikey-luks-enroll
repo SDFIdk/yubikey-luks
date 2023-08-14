@@ -52,14 +52,6 @@ CheckDependencies () {
         exit 1
     fi
 
-    if ! command -v yubikey-luks-enroll &> /dev/null
-    then
-        echo "yubikey-luks-enroll could not be found"
-        echo "Please install it with"
-        echo "apt-get install yubikey-luks"
-        exit 1
-    fi
-
     if ! command -v sed &> /dev/null
     then
         echo "sed could not be found"
