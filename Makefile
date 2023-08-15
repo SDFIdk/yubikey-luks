@@ -35,3 +35,28 @@ ppa:
 
 clean:
 	rm -fr DEBUILD
+
+install:
+	install -D -o root -g root -m755 hook $(DESTDIR)$(PREFIX)/share/initramfs-tools/hooks/yubikey-luks
+	install -D -o root -g root -m755 key-script $(DESTDIR)$(PREFIX)/share/yubikey-luks/ykluks-keyscript
+	install -D -o root -g root -m755 yubikey-luks-open $(DESTDIR)$(PREFIX)/bin/yubikey-luks-open
+	install -D -o root -g root -m755 yubikey-luks-enroll $(DESTDIR)$(PREFIX)/bin/yubikey-luks-enroll
+	install -D -o root -g root -m644 yubikey-luks-enroll.1 $(DESTDIR)$(PREFIX)/man/man1/yubikey-luks-enroll.1
+	install -D -o root -g root -m644 README.md $(DESTDIR)$(PREFIX)/share/doc/yubikey-luks/README.md
+	install -D -o root -g root -m644 ykluks.cfg $(DESTDIR)/etc/ykluks.cfg
+	install -D -o root -g root -m755 yubikey-luks-suspend $(DESTDIR)$(PREFIX)/lib/yubikey-luks/yubikey-luks-suspend
+	install -D -o root -g root -m755 initramfs-suspend $(DESTDIR)$(PREFIX)/lib/yubikey-luks/initramfs-suspend
+	install -D -o root -g root -m644 yubikey-luks-suspend.service $(DESTDIR)$(PREFIX)/lib/systemd/system/yubikey-luks-suspend.service
+
+uninstall:
+	rm -f $(DESTDIR)$(PREFIX)/bin/yubikey-luks-open \
+		$(DESTDIR)$(PREFIX)/bin/yubikey-luks-enroll \
+		$(DESTDIR)$(PREFIX)/share/yubikey-luks/ykluks-keyscript \
+		$(DESTDIR)$(PREFIX)/share/initramfs-tools/hooks/yubikey-luks \
+		$(DESTDIR)$(PREFIX)/man/man1/yubikey-luks-enroll.1 \
+		$(DESTDIR)$(PREFIX)/share/doc/yubikey-luks/README.md \
+		$(DESTDIR)/etc/ykluks.cfg \
+		$(DESTDIR)$(PREFIX)/lib/yubikey-luks/yubikey-luks-suspend \
+		$(DESTDIR)$(PREFIX)/lib/yubikey-luks/initramfs-suspend \
+		$(DESTDIR)$(PREFIX)/lib/systemd/systme/yubikey-luks-suspend.service
+
