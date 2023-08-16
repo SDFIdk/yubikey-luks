@@ -183,7 +183,7 @@ LuksFindFreeSlot () {
     do
         if echo "$SlotsInUse" | grep -q -F -v "$SLOT"
         then
-            LUSK_SLOT=$SLOT
+            LUKS_SLOT=$SLOT
             return
         fi
     done
