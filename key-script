@@ -6,7 +6,8 @@
 #Set this in case the value is missing in /etc/ykluks.cfg
 CONCATENATE=0
 HASH=0
-WELCOME_TEXT="Please insert YubiKey and press enter or enter a valid passphrase ..."
+WELCOME_TEXT="Please insert YubiKey and press enter or enter a valid LUKS password ..."
+CHALLENGE_TEXT="Please enter a valid YubiKey passphrase ..."
 YUBIKEY_SLOT=2
 #YUBIKEY_CHALLENGE="YubiKey Password" Set this in /etc/ykluks.conf to enable 1FA
 
@@ -27,21 +28,68 @@ Message() {
     return
 }
 
-# Check if YubiKey is missing or 1FA is enabled
-if [ -z "$YUBIKEY_CHALLENGE" ] || ! ykinfo -q -"$YUBIKEY_SLOT" >/dev/null 2>&1
-then
+Debug () {
+    if [ -n "$DEBUG" ]
+    then
+        Message "$@"
+    fi
+}
+
+Password () {
     if [ -x /bin/plymouth ] && plymouth --ping
     then
         PASSWORD="$(plymouth ask-for-password --prompt "$WELCOME_TEXT")"
     else
         PASSWORD="$(/lib/cryptsetup/askpass "$WELCOME_TEXT")"
     fi
-fi
 
-# Check if user has press enter after inserting YubiKey (remove 1FA warning)
-if [ -z "$PASSWORD" ] && [ -n "$YUBIKEY_CHALLENGE" ]
+    if [ -z "$PASSWORD" ]
+    then
+        if ! ykinfo -q -"$YUBIKEY_SLOT" >/dev/null 2>&1
+        then
+            Message "LUKS password cant be blank, please try again"
+        else
+            Debug "Restart script to handle YubiKey"
+        fi
+        exit
+    fi
+
+    echo -n "$PASSWORD"
+    exit
+}
+
+Challenge () {
+    if [ -x /bin/plymouth ] && plymouth --ping
+    then
+        YUBIKEY_CHALLENGE="$(plymouth ask-for-password --prompt "$CHALLENGE_TEXT")"
+    else
+        YUBIKEY_CHALLENGE="$(/lib/cryptsetup/askpass "$CHALLENGE_TEXT")"
+    fi
+
+    if [ -z "$YUBIKEY_CHALLENGE" ]
+    then
+        Message "YubiKey challenge cant be blank, please try again"
+        exit
+    fi
+}
+
+DEBUG=true
+
+# Check if YubiKey is missing or 2FA is enabled
+if [ -z "$YUBIKEY_CHALLENGE" ] || ! ykinfo -q -"$YUBIKEY_SLOT" >/dev/null 2>&1
 then
-    PASSWORD="$YUBIKEY_CHALLENGE"
+    if ykinfo -q -"$YUBIKEY_SLOT" >/dev/null 2>&1
+    then
+        Debug "YubiKey detected"
+        Debug "2FA challenge"
+        Challenge
+    else
+        Debug "YubiKey not detected"
+        Debug "Password or insert YubuKey"
+        Password
+    fi
+else
+    Debug "1FA enabled $YUBIKEY_CHALLENGE"
 fi
 
 # Check if YubiKey has been inserted during promt
@@ -50,23 +98,23 @@ then
     Message "Accessing yubikey..."
     if [ "$HASH" = "1" ]
     then
-        PASSWORD=$(echo -n "$PASSWORD" | sha256sum | awk '{print $1}')
+        CHALLENGE=$(echo -n "$YUBIKEY_CHALLENGE" | sha256sum | awk '{print $1}')
+    else
+        CHALLENGE=$YUBIKEY_CHALLENGE
     fi
-    RESPONCE="$(echo -n "$PASSWORD" | ykchalresp -"$YUBIKEY_SLOT" -i- 2>/dev/null || true)"
+    RESPONCE="$(echo -n "$CHALLENGE" | ykchalresp -"$YUBIKEY_SLOT" -i- 2>/dev/null || true)"
     if [ "$RESPONCE" ]
     then
         Message "Retrieved the response from the Yubikey"
         if [ "$CONCATENATE" = "1" ]
         then
-            echo -n "$PASSWORD$RESPONCE"
+            echo -n "$CHALLENGE$RESPONCE"
         else
             echo -n "$RESPONCE"
         fi
     else
         Message "Failed to retrieve the response from the Yubikey"
     fi
-else
-    echo -n "$PASSWORD"
 fi
 
 exit
