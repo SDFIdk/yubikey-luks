@@ -307,24 +307,14 @@ YubiKeyResponce () {
 }
 
 YubiKeyEnable1FA () {
-    if [ -z "$ENABLE_1FA" ]
+    # Check where ENABLE_1FA is set and YUBIKEY_CHALLENGE was not importet from /etc/ykluks.cfg
+    if [ -z "$ENABLE_1FA" ] && [ -n "$YUBIKEY_CHALLENGE" ]
     then
         return
     fi
 
-    if grep -q -F "YUBIKEY_CHALLENGE" /etc/ykluks.cfg
-    then
-        if grep -q -F "YUBIKEY_CHALLENGE=\"$YUBIKEY_CHALLENGE\"" /etc/ykluks.cfg
-        then
-            # key already defined no changes needed
-            return
-        else
-            echo "ERROR YUBIKEY_CHALLENGE alreaady defined with a diffrent value in /etc/ykluks.cfg"
-            exit 1
-        fi
-    fi
-
-    echo "YUBIKEY_CHALLENGE=\"$YUBIKEY_CHALLENGE\"" >> /etc/ykluks.cfg
+    YUBIKEY_CHALLENGE=$(openssl rand -base64 32)
+    sed 's/# $YUBIKEY_CHALLENGE="password"/YUBIKEY_CHALLENGE="$YUBIKEY_CHALLENGE"/g' /etc/ykluks.cfg
 }
 
 YubiKeyUpdateConfig () {
