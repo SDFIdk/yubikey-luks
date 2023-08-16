@@ -314,7 +314,7 @@ YubiKeyEnable1FA () {
     fi
 
     YUBIKEY_CHALLENGE=$(openssl rand -base64 32)
-    sed 's/# $YUBIKEY_CHALLENGE="password"/YUBIKEY_CHALLENGE="$YUBIKEY_CHALLENGE"/g' /etc/ykluks.cfg
+    sed -i "s/# YUBIKEY_CHALLENGE=\"password\"/YUBIKEY_CHALLENGE=\"$YUBIKEY_CHALLENGE\"/g" /etc/ykluks.cfg
 }
 
 YubiKeyUpdateConfig () {
