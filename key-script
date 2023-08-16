@@ -11,7 +11,11 @@ YUBIKEY_SLOT=2
 #YUBIKEY_CHALLENGE="YubiKey Password" Set this in /etc/ykluks.conf to enable 1FA
 
 # Import config
-. /etc/ykluks.cfg
+if [ -f /etc/ykluks.cfg ]
+then
+    # shellcheck source=ykluks.cfg
+    . /etc/ykluks.cfg
+fi
 
 message() {
     if [ -x /bin/plymouth ] && plymouth --ping
