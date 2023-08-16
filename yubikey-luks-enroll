@@ -311,7 +311,8 @@ YubiKeyEnable1FA () {
     if [ -z "$ENABLE_1FA" ] && [ -n "$YUBIKEY_CHALLENGE" ]
     then
         YUBIKEY_CHALLENGE=$(openssl rand -base64 32)
-        sed -i "s/# YUBIKEY_CHALLENGE=\"password\"/YUBIKEY_CHALLENGE=\"$YUBIKEY_CHALLENGE\"/g" /etc/ykluks.cfg
+        sed -i "s|# YUBIKEY_CHALLENGE=\"password\"|YUBIKEY_CHALLENGE=\"$YUBIKEY_CHALLENGE\"|g" /etc/ykluks.cfg
+        echo "Saving random generate YUBIKEY_CHALLENGE to /etc/ykluks.cfg"
     fi
 }
 
