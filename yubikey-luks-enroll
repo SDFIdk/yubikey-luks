@@ -18,7 +18,6 @@ DefaultConfig () {
     YUBIKEY_SLOT=2
     #YUBIKEY_CHALLENGE="YubiKey Password" Set this in /etc/ykluks.conf to enable 1FA
     CLEAR_SLOT=0
-    DBG=0
 
     if [ -f /etc/ykluks.cfg ]
     then
@@ -103,7 +102,7 @@ ArgumentHandeling () {
                 CLEAR_SLOT=1
                 echo "clearing slot"
                 ;;
-            v)  DBG=1
+            v)  DEBUG=true
                 echo "debugging enabled"
                 ;;
             h)
@@ -206,7 +205,7 @@ LuksPassword () {
     if [ -z "$LUKS_PASSWORD" ]
     then
         LUKS_PASSWORD=$(/lib/cryptsetup/askpass "Please provide an existing passphrase to LUKS. This is NOT the passphrase you just entered, this is the passphrase that you currently use to unlock your LUKS encrypted device:")
-        if [ "$DBG" = "1" ]
+        if [ -n "$DEBUG" ]
         then
             echo "LUKS passphrase: $LUKS_PASSWORD"
         fi
@@ -217,13 +216,13 @@ LuksAddYubiKey () {
     if [ "$CONCATENATE" = "1" ]
     then
         printf '%s\n' "$LUKS_PASSWORD" "$YUBIKEY_CHALLENGE$YUBIKEY_RESPONCE" "$YUBIKEY_CHALLENGE$YUBIKEY_RESPONCE" | cryptsetup --key-slot="$LUKS_SLOT" luksAddKey "$LUKS_DEVICE" 2>&1;
-        if [ "$DBG" = "1" ]
+        if [ -n "$DEBUG" ]
         then
             echo "LUKS key: $YUBIKEY_CHALLENGE$YUBIKEY_RESPONCE"
         fi
     else
         printf '%s\n' "$LUKS_PASSWORD" "$YUBIKEY_RESPONCE" "$YUBIKEY_RESPONCE" | cryptsetup --key-slot="$LUKS_SLOT" luksAddKey "$LUKS_DEVICE" 2>&1;
-        if [ "$DBG" = "1" ]
+        if [ -n "$DEBUG" ]
         then
             echo "LUKS key: $YUBIKEY_RESPONCE"
         fi
@@ -269,7 +268,7 @@ YubiKeyChallenge () {
     if [ -z "$YUBIKEY_CHALLENGE" ]
     then
         YUBIKEY_CHALLENGE=$(/lib/cryptsetup/askpass "Please enter the yubikey challenge password. This is the password that will only work while your yubikey is installed in your computer:")
-        if [ "$DBG" = "1" ]
+        if [ -n "$DEBUG" ]
         then
             echo "Password: $YUBIKEY_CHALLENGE"
         fi
@@ -286,7 +285,7 @@ YubiKeyHash () {
     if [ "$HASH" = "1" ]
     then
         YUBIKEY_CHALLENGE=$(echo -n "$YUBIKEY_CHALLENGE" | sha256sum | awk '{print $1}')
-        if [ "$DBG" = "1" ]
+        if [ -n "$DEBUG" ]
         then
             echo "Password hash: $YUBIKEY_CHALLENGE"
         fi
@@ -295,7 +294,7 @@ YubiKeyHash () {
 
 YubiKeyResponce () {
     YUBIKEY_RESPONCE="$(echo -n "$YUBIKEY_CHALLENGE" | ykchalresp -"$YUBIKEY_SLOT" -i- 2>/dev/null || true)"
-    if [ "$DBG" = "1" ]
+    if [ -n "$DEBUG" ]
     then
         echo "Yubikey response: $YUBIKEY_RESPONCE"
     fi
