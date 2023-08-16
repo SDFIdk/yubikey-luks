@@ -247,14 +247,14 @@ YubiKeyDetect () {
 }
 
 YubiKeyLuksCheck () {
-    echo "Check where the YubiKey 1FA already exist in LUKS"
-    echo
-
     if [ -z "$YUBIKEY_CHALLENGE" ]
     then
         # 1FA not enabled
         return
     fi
+
+    echo "Check where the YubiKey 1FA already exist in LUKS"
+    echo
 
     if echo -n "$YUBIKEY_CHALLENGE" | ykchalresp -"$YUBIKEY_SLOT" -i- | cryptsetup open --test-passphrase "$LUKS_DEVICE"
     then
