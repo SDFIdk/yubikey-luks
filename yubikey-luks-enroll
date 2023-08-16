@@ -308,7 +308,7 @@ YubiKeyResponce () {
 
 YubiKeyEnable1FA () {
     # Check where ENABLE_1FA is enabled and YUBIKEY_CHALLENGE is not already defined in /etc/ykluks.cfg
-    if [ -z "$ENABLE_1FA" ] && [ -n "$YUBIKEY_CHALLENGE" ]
+    if [ -n "$ENABLE_1FA" ] && [ -z "$YUBIKEY_CHALLENGE" ]
     then
         YUBIKEY_CHALLENGE=$(openssl rand -base64 32)
         sed -i "s|# YUBIKEY_CHALLENGE=\"password\"|YUBIKEY_CHALLENGE=\"$YUBIKEY_CHALLENGE\"|g" /etc/ykluks.cfg
