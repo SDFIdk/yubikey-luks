@@ -5,7 +5,12 @@ DBG=0
 YUBIKEY_SLOT=2 #Set this in case the value is missing in /etc/ykluks.cfg
 
 set -e
-. /etc/ykluks.cfg
+    
+if [ -f /etc/ykluks.cfg ]
+then
+    # shellcheck source=ykluks.cfg
+    . /etc/ykluks.cfg
+fi
 
 while getopts ":d:n:hv" opt
 do
