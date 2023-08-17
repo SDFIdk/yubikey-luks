@@ -35,6 +35,19 @@ Debug () {
     fi
 }
 
+CheckYubiKey () {
+    if [ "$(ykinfo -q -"$YUBIKEY_SLOT" 2> /dev/null)" = "0" ]
+    then
+        Message "YubiKey detectet but not configured for LUKS2 authentication"
+        if [ -x /bin/plymouth ] && plymouth --ping
+        then
+            plymouth ask-for-password --prompt "Please remove YubiKey and press enter to continue"
+        else
+            /lib/cryptsetup/askpass "Please remove YubiKey and press enter to continue"
+        fi
+        exit
+    fi
+}
 Password () {
     if [ -x /bin/plymouth ] && plymouth --ping
     then
@@ -75,6 +88,7 @@ Challenge () {
 
 DEBUG=true
 
+CheckYubiKey
 # Check if 1FA is not enabled
 # Check if YubiKey is missing 
 # Ask user for 2FA challenge, LUKS2 password or to Insert YubiKey
