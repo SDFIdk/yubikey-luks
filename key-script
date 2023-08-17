@@ -6,8 +6,8 @@
 # Set this in case the value is missing in /etc/ykluks.cfg
 CONCATENATE=0
 HASH=0
-WELCOME_TEXT="Please insert YubiKey and press enter or enter a valid LUKS2 password ..."
-CHALLENGE_TEXT="Please enter a valid YubiKey passphrase ..."
+WELCOME_TEXT="Please insert LUKS2 YubiKey and press enter or enter a valid LUKS2 password ..."
+CHALLENGE_TEXT="YubiKey 2FA. Please enter a valid challenge ..."
 YUBIKEY_SLOT=2
 # YUBIKEY_CHALLENGE="YubiKey Challenge" Set this in /etc/ykluks.conf to enable 1FA
 
