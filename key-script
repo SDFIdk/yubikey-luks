@@ -3,13 +3,13 @@
 # This is /sbin/ykluks-keyscript, which gets called when unlocking the disk
 #
 
-#Set this in case the value is missing in /etc/ykluks.cfg
+# Set this in case the value is missing in /etc/ykluks.cfg
 CONCATENATE=0
 HASH=0
-WELCOME_TEXT="Please insert YubiKey and press enter or enter a valid LUKS password ..."
+WELCOME_TEXT="Please insert YubiKey and press enter or enter a valid LUKS2 password ..."
 CHALLENGE_TEXT="Please enter a valid YubiKey passphrase ..."
 YUBIKEY_SLOT=2
-#YUBIKEY_CHALLENGE="YubiKey Password" Set this in /etc/ykluks.conf to enable 1FA
+# YUBIKEY_CHALLENGE="YubiKey Challenge" Set this in /etc/ykluks.conf to enable 1FA
 
 # Import config
 if [ -f /etc/ykluks.cfg ]
@@ -47,9 +47,9 @@ Password () {
     then
         if [ "$(ykinfo -q -"$YUBIKEY_SLOT")" -ne "1" ]
         then
-            Message "LUKS password cant be blank, please try again"
+            Message "LUKS2 password cant be blank, please try again"
         else
-            Debug "Restart script to handle YubiKey"
+            Debug "YubiKey detected, restart script to handle YubiKey authentication"
         fi
         exit
     fi
@@ -75,19 +75,17 @@ Challenge () {
 
 DEBUG=true
 
-# Ask user for 2FA challenge or LUKS password
 # Check if 1FA is not enabled
 # Check if YubiKey is missing 
+# Ask user for 2FA challenge, LUKS2 password or to Insert YubiKey
 if [ -z "$YUBIKEY_CHALLENGE" ] || [ "$(ykinfo -q -"$YUBIKEY_SLOT")" -ne "1" ]
 then
     if [ "$(ykinfo -q -"$YUBIKEY_SLOT")" -eq "1" ]
     then
-        Debug "YubiKey detected"
-        Debug "2FA challenge"
+        Debug "Configured YubiKey detected"
         Challenge
     else
-        Debug "YubiKey not detected"
-        Debug "Password or insert YubuKey"
+        Debug "Ask for Password or insert YubuKey"
         Password
     fi
 else
