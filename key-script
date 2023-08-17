@@ -55,19 +55,24 @@ Password () {
     else
         PASSWORD="$(/lib/cryptsetup/askpass "$WELCOME_TEXT")"
     fi
-
-    if [ -z "$PASSWORD" ]
+    CheckYubiKey
+    if [ -n "$(ykinfo -q -"$YUBIKEY_SLOT" 2> /dev/null)" ]
     then
-        if [ "$(ykinfo -q -"$YUBIKEY_SLOT")" != "1" ]
+        if [ -n "$PASSWORD" ]
         then
-            Message "LUKS2 password cant be blank, please try again"
-        else
-            Debug "YubiKey detected, restart script to handle YubiKey authentication"
+            Debug "2FA Set YUBIKEY_CHALLENGE=PASSWORD"
+            YUBIKEY_CHALLENGE=$PASSWORD
         fi
+        Debug "YubiKey detected, restart script to handle YubiKey authentication"
         exit
     fi
 
-    echo -n "$PASSWORD"
+    if [ -z "$PASSWORD" ]
+    then
+        Message "LUKS2 password cant be blank, please try again"
+    else
+        echo -n "$PASSWORD"
+    fi
     exit
 }
 
