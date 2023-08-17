@@ -230,7 +230,9 @@ LuksAddYubiKey () {
 }
 
 YubiKeyInit () {
-    ykpersonalize -y -"$YUBIKEY_SLOT" -ochal-resp -ochal-hmac -ohmac-lt64 -oserial-api-visible > /dev/null 2>&1
+    if [ "$(ykinfo -q -"$YUBIKEY_SLOT")" -ne "1" ]
+        ykpersonalize -y -"$YUBIKEY_SLOT" -ochal-resp -ochal-hmac -ohmac-lt64 -oserial-api-visible > /dev/null 2>&1
+    fi
 }
 
 YubiKeyDetect () {
