@@ -45,7 +45,7 @@ Password () {
 
     if [ -z "$PASSWORD" ]
     then
-        if ! ykinfo -q -"$YUBIKEY_SLOT" >/dev/null 2>&1
+        if [ "$(ykinfo -q -"$YUBIKEY_SLOT")" -ne "1" ]
         then
             Message "LUKS password cant be blank, please try again"
         else
@@ -75,10 +75,12 @@ Challenge () {
 
 DEBUG=true
 
-# Check if YubiKey is missing or 2FA is enabled
-if [ -z "$YUBIKEY_CHALLENGE" ] || ! ykinfo -q -"$YUBIKEY_SLOT" >/dev/null 2>&1
+# Ask user for 2FA challenge or LUKS password
+# Check if 1FA is not enabled
+# Check if YubiKey is missing 
+if [ -z "$YUBIKEY_CHALLENGE" ] || [ "$(ykinfo -q -"$YUBIKEY_SLOT")" -ne "1" ]
 then
-    if ykinfo -q -"$YUBIKEY_SLOT" >/dev/null 2>&1
+    if [ "$(ykinfo -q -"$YUBIKEY_SLOT")" -eq "1" ]
     then
         Debug "YubiKey detected"
         Debug "2FA challenge"
@@ -93,7 +95,7 @@ else
 fi
 
 # Check if YubiKey has been inserted during promt
-if ykinfo -q -"$YUBIKEY_SLOT" > /dev/null 2>&1
+if [ "$(ykinfo -q -"$YUBIKEY_SLOT")" -eq "1" ]
 then
     Message "Accessing yubikey..."
     if [ "$HASH" = "1" ]
